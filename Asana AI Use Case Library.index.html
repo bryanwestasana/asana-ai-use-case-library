@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asana AI Use Case Library</title>
+<style>
+  /* ── Asana Brand Tokens ─────────────────────── */
+  :root {
+    --black:   #0B0505;
+    --coral:   #FF584A;
+    --white:   #FFFFFF;
+    --neutral: #F3F3F3;
+    /* Surface palette */
+    --teammates: #745BFA;  --teammates-lt: #A999FF;  --teammates-bg: #F4F2FF;
+    --studio:    #FF7A00;  --studio-lt:    #FFB469;   --studio-bg:    #FFF4EA;
+    --dash:      #0071FF;  --dash-lt:      #9EDCF2;   --dash-bg:      #EEF5FF;
+    --smart:     #0FA042;  --smart-lt:     #9EF2A4;   --smart-bg:     #EDFAF2;
+    --cross:     #FF584A;  --cross-bg:     #FFF0EE;
+    /* UI chrome */
+    --bg:      #F3F3F3;
+    --surface: #FFFFFF;
+    --border:  #D7D9DB;
+    --text:    #0B0505;
+    --muted:   #808080;
+    --radius:  4px;
+    --radius-lg: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Header ─────────────────────────────────── */
+  header {
+    background: var(--black);
+    color: var(--white);
+    padding: 36px 48px 32px;
+    border-bottom: 3px solid var(--coral);
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+    line-height: 1.1;
+  }
+  header p {
+    font-size: 14px;
+    color: rgba(255,255,255,.6);
+    font-weight: 300;
+    max-width: 640px;
+  }
+  .header-stats {
+    display: flex;
+    gap: 2px;
+    margin-top: 28px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    padding-top: 24px;
+  }
+  .stat {
+    flex: 1;
+    padding-right: 24px;
+    border-right: 1px solid rgba(255,255,255,.12);
+  }
+  .stat:last-child { border-right: none; padding-right: 0; }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--coral);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: rgba(255,255,255,.45);
+    margin-top: 4px;
+  }
+
+  /* ── Controls / Filter bar ───────────────────── */
+  .controls {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 6px rgba(11,5,5,.08);
+    padding: 0 48px;
+  }
+  .search-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-row input {
+    width: 320px;
+    padding: 9px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    outline: none;
+    transition: border .15s;
+    background: var(--neutral);
+    color: var(--text);
+  }
+  .search-row input:focus { border-color: var(--coral); background: var(--white); }
+  .search-row input::placeholder { color: var(--muted); }
+  .result-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .filter-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-section:last-child { border-bottom: none; }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    width: 72px;
+    flex-shrink: 0;
+  }
+  .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .filter-btn {
+    padding: 5px 14px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    border-radius: 2px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .12s;
+    color: var(--text);
+    white-space: nowrap;
+    letter-spacing: .01em;
+  }
+  .filter-btn:hover {
+    border-color: var(--black);
+    background: var(--neutral);
+  }
+  .filter-btn.active {
+    background: var(--black);
+    color: var(--white);
+    border-color: var(--black);
+  }
+  /* Surface-specific active states */
+  .filter-btn[data-val="AI Teammates"].active  { background: var(--teammates); border-color: var(--teammates); }
+  .filter-btn[data-val="AI Studio"].active     { background: var(--studio);    border-color: var(--studio); }
+  .filter-btn[data-val="Dash"].active          { background: var(--dash);      border-color: var(--dash); }
+  .filter-btn[data-val="Smart Features"].active { background: var(--smart);   border-color: var(--smart); }
+  .filter-btn[data-val="Cross-Feature"].active { background: var(--coral);    border-color: var(--coral); }
+
+  /* ── Card Grid ───────────────────────────────── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 16px;
+    padding: 28px 48px 48px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: box-shadow .18s, transform .15s;
+  }
+  .card:hover {
+    box-shadow: 0 6px 20px rgba(11,5,5,.1);
+    transform: translateY(-1px);
+  }
+  .card.hidden { display: none; }
+
+  /* Card top accent bar, colored per surface */
+  .card-accent {
+    height: 3px;
+  }
+  .accent-AI.Teammates  { background: var(--teammates); }
+  .accent-AI.Studio     { background: var(--studio); }
+  .accent-Dash          { background: var(--dash); }
+  .accent-Smart.Features { background: var(--smart); }
+  .accent-Cross-Feature { background: var(--coral); }
+
+  .card-header { padding: 16px 20px 12px; }
+  .card-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    white-space: nowrap;
+  }
+  /* Surface badges */
+  .badge-surface-AI.Teammates  { background: var(--teammates-bg); color: var(--teammates); }
+  .badge-surface-AI.Studio     { background: var(--studio-bg);    color: var(--studio); }
+  .badge-surface-Dash          { background: var(--dash-bg);      color: var(--dash); }
+  .badge-surface-Smart.Features { background: var(--smart-bg);   color: var(--smart); }
+  .badge-surface-Cross-Feature { background: var(--cross-bg);    color: var(--coral); }
+  /* Cross-feature combo badge */
+  .badge-cf { background: var(--cross-bg); color: var(--coral); border: 1px solid #FFB8B2; }
+  /* Difficulty */
+  .badge-diff-ootb   { background: var(--smart-bg);  color: var(--smart); }
+  .badge-diff-light  { background: #FFF8E0;           color: #8A6B00; }
+  .badge-diff-studio { background: var(--studio-bg);  color: var(--studio); }
+  /* Credits */
+  .badge-credit-Low    { background: var(--smart-bg); color: var(--smart); }
+  .badge-credit-Medium { background: #FFF8E0;          color: #8A6B00; }
+  .badge-credit-High   { background: var(--cross-bg);  color: var(--coral); }
+  /* Function / used-by */
+  .badge-fn   { background: var(--neutral); color: var(--muted); border: 1px solid var(--border); }
+  .badge-used { background: var(--dash-bg); color: var(--dash);  border: 1px solid var(--dash-lt); }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+    line-height: 1.25;
+  }
+  .card-jtbd {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  /* ── Card Tabs ───────────────────────────────── */
+  .card-tabs {
+    display: flex;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--neutral);
+  }
+  .card-tab {
+    flex: 1;
+    padding: 9px 12px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    transition: all .12s;
+    user-select: none;
+    background: transparent;
+    border-right: 1px solid var(--border);
+  }
+  .card-tab:last-child { border-right: none; }
+  .card-tab.active {
+    color: var(--coral);
+    background: var(--surface);
+    border-bottom-color: var(--coral);
+  }
+  .card-tab:hover:not(.active) { color: var(--text); }
+
+  /* ── Card Body ───────────────────────────────── */
+  .card-body { padding: 16px 20px 18px; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin-bottom: 5px;
+    margin-top: 14px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* Content boxes */
+  .hook-box {
+    background: #FFF0EE;
+    border-left: 3px solid var(--coral);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #6B1A14;
+    line-height: 1.6;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .value-box {
+    background: var(--smart-bg);
+    border-left: 3px solid var(--smart);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #0A4021;
+    line-height: 1.5;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .im-box {
+    background: var(--neutral);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--studio);
+    padding: 12px 14px;
+    font-size: 11.5px;
+    color: #3D2000;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    font-family: 'Menlo', 'Consolas', monospace;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .workflow-box {
+    background: var(--dash-bg);
+    border-left: 3px solid var(--dash);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #002A6B;
+    line-height: 1.5;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  .pill-list { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill {
+    background: var(--neutral);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: .01em;
+  }
+
+  .starter-task {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: var(--neutral);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background .12s, border-color .12s;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .starter-task:hover { background: #EAEAEA; border-color: #B0B3B8; }
+  .starter-task::before {
+    content: '—';
+    color: var(--coral);
+    font-weight: 700;
+    flex-shrink: 0;
+    font-size: 11px;
+    margin-top: 1px;
+  }
+
+  .examples-list { list-style: none; padding: 0; }
+  .examples-list li {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--muted);
+    padding: 3px 0 3px 14px;
+    position: relative;
+    font-weight: 300;
+  }
+  .examples-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--coral);
+  }
+
+  .credit-note {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.55;
+    font-weight: 300;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+  .credit-note strong { font-weight: 700; color: var(--text); }
+  .credit-tier { display: inline-block; margin-right: 10px; white-space: nowrap; }
+  .ct-low    { color: var(--smart); font-weight: 700; }
+  .ct-med    { color: #8A6B00;     font-weight: 700; }
+  .ct-high   { color: var(--coral); font-weight: 700; }
+  .filter-col { display: flex; flex-direction: column; }
+
+  .prereq-text {
+    font-size: 12px;
+    color: #3D3030;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── No results ──────────────────────────────── */
+  .no-results {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+  }
+  .no-results h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .no-results p { font-size: 13px; font-weight: 300; }
+
+  @media (max-width: 768px) {
+    header, .controls { padding-left: 16px; padding-right: 16px; }
+    .grid { padding: 16px; grid-template-columns: 1fr; }
+    .search-row input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">Art of the Possible</div>
+  <h1>Asana AI Use Case Library</h1>
+  <p>50 use cases across AI Teammates, AI Studio, Dash, Smart Features, and Cross-Feature workflows — built for CSMs and Implementation Managers.</p>
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-num">50</div>
+      <div class="stat-label">Use Cases</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Cross-Feature</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">10</div>
+      <div class="stat-label">Functions</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">2</div>
+      <div class="stat-label">Views per Card</div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-row">
+    <input type="text" id="searchInput" placeholder="Search use cases, functions, keywords..." />
+    <span class="result-count" id="resultCount">50 use cases</span>
+  </div>
+  <div class="filter-section">
+    <span class="filter-label">Surface</span>
+    <div class="filter-group">
+      <button class="filter-btn active" data-group="surface" data-val="All">All</button>
+      <button class="filter-btn" data-group="surface" data-val="AI Teammates">AI Teammates</button>
+      <button class="filter-btn" data-group="surface" data-val="AI Studio">AI Studio</button>
+      <button class="filter-btn" data-group="surface" data-val="Dash">Dash</button>
+      <button class="filter-btn" data-group="surface" data-val="Smart Features">Smart Features</button>
+      <button class="filter-btn" data-group="surface" data-val="Cross-Feature">Cross-Feature</button>
+    </div>
+  </div>
+  <div class="filter-section">
+    <span class="filter-label">Function</span>
+    <div class="filter-group">
+      <button class="filter-btn active" data-group="function" data-val="All">All</button>
+      <button class="filter-btn" data-group="function" data-val="Cross-Functional">Cross-Functional</button><button class="filter-btn" data-group="function" data-val="Customer Success">Customer Success</button><button class="filter-btn" data-group="function" data-val="Finance">Finance</button><button class="filter-btn" data-group="function" data-val="Human Resources">Human Resources</button><button class="filter-btn" data-group="function" data-val="IT">IT</button><button class="filter-btn" data-group="function" data-val="Legal">Legal</button><button class="filter-btn" data-group="function" data-val="Marketing">Marketing</button><button class="filter-btn" data-group="function" data-val="Operations">Operations</button><button class="filter-btn" data-group="function" data-val="Product & Engineering">Product & Engineering</button><button class="filter-btn" data-group="function" data-val="Strategic Ops">Strategic Ops</button>
+    </div>
+  </div>
+  <div class="filter-section">
+    <span class="filter-label">Setup</span>
+    <div class="filter-group">
+      <button class="filter-btn active" data-group="difficulty" data-val="All">All</button>
+      <button class="filter-btn" data-group="difficulty" data-val="Out-of-the-box">Out-of-the-box</button>
+      <button class="filter-btn" data-group="difficulty" data-val="Light config">Light config</button>
+      <button class="filter-btn" data-group="difficulty" data-val="Requires Studio build">Studio build</button>
+    </div>
+  </div>
+  <div class="filter-section" style="align-items:flex-start">
+    <span class="filter-label" style="padding-top:6px">Credits</span>
+    <div class="filter-col">
+      <div class="filter-group">
+        <button class="filter-btn active" data-group="credits" data-val="All">All</button>
+        <button class="filter-btn" data-group="credits" data-val="Low">Low</button>
+        <button class="filter-btn" data-group="credits" data-val="Medium">Medium</button>
+        <button class="filter-btn" data-group="credits" data-val="High">High</button>
+      </div>
+      <div class="credit-note">
+        <strong>AWM includes ~250 pooled credits/month</strong>, shared across your workspace.
+        &nbsp;
+        <span class="credit-tier"><span class="ct-low">Low</span> = 0–2 credits/run — fits comfortably within the free tier</span>
+        <span class="credit-tier"><span class="ct-med">Medium</span> = 3–5 credits/run — budget ~50 runs/month on the free tier</span>
+        <span class="credit-tier"><span class="ct-high">High</span> = 6–15+ credits/run — recommend AI Studio Pro/Max for production workloads</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid" id="cardGrid">
+  <div class="no-results hidden" id="noResults">
+    <h3>No use cases match your filters</h3>
+    <p>Try adjusting your search or clearing some filters</p>
+  </div>
+</div>
+
+<script>
+const USE_CASES = [
+  {
+    "name": "Weekly Status Digest",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Operations",
+      "Cross-Functional"
+    ],
+    "jtbd": "Save time on status reporting",
+    "difficulty": "Light config",
+    "prerequisites": "Tasks with due dates and assignees; AI Teammates enabled; AWM credits",
+    "how_to": "Configure a Teammate to run weekly, pull task activity, draft a status update, and post it to the project",
+    "implementation_notes": "1. Create Teammate → trigger: Schedule (Friday 4 PM). 2. Grant access to target project(s). 3. Prompt: review tasks updated in past 7 days, identify completed/in-progress/at-risk, draft RAG status, post as project status update. 4. Test on one project first. AIDM TIP: Use multi-project configs with {{project.name}} variables for portfolio-level digests. Est. 45 min.",
+    "skills": [
+      "Status generation",
+      "Task summarization",
+      "Scheduled automation"
+    ],
+    "examples": [
+      "Scan project tasks and summarize completed work, in-progress items, and risks",
+      "Draft a Friday portfolio update ready for stakeholders",
+      "Flag overdue tasks and missing owners in the summary"
+    ],
+    "starter_tasks": [
+      "Summarize this week's project activity and draft a status update",
+      "What milestones are at risk this week?",
+      "Generate a portfolio digest for Friday leadership sync"
+    ],
+    "conversation_hook": "How much time does your team spend writing status updates every week? What if a Teammate drafted it every Friday from actual task data and you just reviewed and published?",
+    "value": "Eliminate 2–3 hrs/week of manual status writing; consistent format every Friday without anyone lifting a finger",
+    "credit_intensity": "Medium",
+    "used_by": [
+      "REWE"
+    ],
+    "smart_workflow_pairing": "Pair with Smart Status for on-demand updates between digests; add Smart Charts to embed visual trends in the weekly report"
+  },
+  {
+    "name": "Pre-Meeting Project Brief",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Prepare for stakeholder meetings faster",
+    "difficulty": "Light config",
+    "prerequisites": "Project with task history; recurring meeting in calendar",
+    "how_to": "Trigger a Teammate before a recurring meeting to summarize recent activity, open risks, and decisions, then post as a task comment",
+    "implementation_notes": "1. Create Teammate → trigger: Rule ('when task due date = meeting date'). 2. Prompt: summarize last 14 days of project activity, list open decisions and blockers, format as executive brief. 3. Output: post as comment on a designated 'Meeting Prep' task. AIDM TIP: Create a standing 'Weekly Sync Prep' task with the Teammate assigned — this keeps the output visible to the whole team. Est. 30 min.",
+    "skills": [
+      "Meeting preparation",
+      "Context synthesis",
+      "Risk summarization"
+    ],
+    "examples": [
+      "Summarize recent project activity before a leadership meeting",
+      "List open decisions and blockers as a pre-read",
+      "Generate talking points from project data in seconds"
+    ],
+    "starter_tasks": [
+      "Summarize project activity for today's stakeholder meeting",
+      "What are the open decisions I should bring to the sync?",
+      "Draft a 3-bullet pre-read for my leadership update"
+    ],
+    "conversation_hook": "How much time does your team spend pulling together pre-reads before every meeting? A Teammate can do that automatically — brief posted 30 minutes before the call.",
+    "value": "15–30 min of meeting prep eliminated per session; show up to every meeting fully informed",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Smart Summaries for on-demand catch-up between meetings"
+  },
+  {
+    "name": "Action Item Capture & Assignment",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Turn meeting notes into tracked work automatically",
+    "difficulty": "Light config",
+    "prerequisites": "Meeting notes pasted into a task or submitted via form; team members in workspace",
+    "how_to": "Paste meeting notes into a task; Teammate extracts action items, creates subtasks, and assigns to the right people",
+    "implementation_notes": "1. Create a 'Meeting Notes' project with a standard intake task template. 2. Teammate trigger: when task tag 'meeting-notes' is added. 3. Prompt: extract every action item, create a subtask per item, assign to the mentioned person, set a due date if mentioned. 4. Output: subtasks on the parent meeting task. AIDM TIP: Pre-define team member names in the Teammate context so assignments are accurate — include 'If owner unclear, assign to [project lead]'. Est. 1 hour.",
+    "skills": [
+      "Action item extraction",
+      "Task creation",
+      "Assignment logic"
+    ],
+    "examples": [
+      "Extract action items from meeting notes and create tasks with owners",
+      "Set due dates on tasks based on what was said in the meeting",
+      "Organize follow-ups by team or project automatically"
+    ],
+    "starter_tasks": [
+      "Extract all action items from these meeting notes",
+      "Create tasks from this meeting summary and assign to the right people",
+      "What follow-ups are still unassigned from last week's notes?"
+    ],
+    "conversation_hook": "How many action items from your last meeting are still floating in someone's notes? A Teammate can turn meeting notes into assigned tasks in seconds.",
+    "value": "Eliminates manual post-meeting task creation; nothing falls through the cracks; follow-through improves immediately",
+    "credit_intensity": "Low",
+    "used_by": [
+      "Fujitsu"
+    ],
+    "smart_workflow_pairing": "Combine with Smart Rules to auto-tag tasks by team or priority; pair with Sprint Accelerator for engineering meetings"
+  },
+  {
+    "name": "Risk & Blocker Monitor",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Operations",
+      "Strategic Ops"
+    ],
+    "jtbd": "Surface project risks before they escalate to leadership",
+    "difficulty": "Light config",
+    "prerequisites": "Tasks with due dates, dependencies, and owners; portfolio configured",
+    "how_to": "Schedule a Teammate to scan a portfolio daily, flag overdue/stalled tasks, and notify the project lead",
+    "implementation_notes": "1. Teammate trigger: Daily schedule (8 AM). 2. Grant access to portfolio. 3. Prompt: identify tasks overdue by 2+ days, tasks with no owner, milestones without subtasks, and dependencies at risk. 4. Output: comment on the portfolio overview task with a risk summary table. AIDM TIP: Add a severity threshold ('only flag if 3+ tasks are at risk') to avoid noise on healthy projects. Est. 1 hour.",
+    "skills": [
+      "Risk detection",
+      "Portfolio monitoring",
+      "Proactive alerting"
+    ],
+    "examples": [
+      "Scan a portfolio and flag overdue tasks and missing owners daily",
+      "Identify milestones at risk based on subtask completion rates",
+      "Summarize top 3 risks across all active projects"
+    ],
+    "starter_tasks": [
+      "What are the top risks in my portfolio right now?",
+      "Which tasks are overdue and don't have an owner?",
+      "Flag any milestones at risk this week"
+    ],
+    "conversation_hook": "By the time a risk reaches your attention, it's usually already a problem. What if you got a daily alert every morning listing exactly what's at risk — before anyone asks?",
+    "value": "Catch risks proactively before leadership asks; fewer surprise escalations and fire drills",
+    "credit_intensity": "Medium",
+    "used_by": [
+      "Aetna"
+    ],
+    "smart_workflow_pairing": "Combine with Smart Status to auto-update project health when risks are flagged; pair with RAID Tracker for full risk management coverage"
+  },
+  {
+    "name": "Onboarding Coordinator",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Human Resources",
+      "Operations"
+    ],
+    "jtbd": "Ramp new team members faster with less manual coordination",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Onboarding template project; new hire info captured via intake form",
+    "how_to": "When a new hire form is submitted, Teammate generates a personalized onboarding task list, assigns a buddy, and schedules check-in tasks",
+    "implementation_notes": "1. Build intake form (name, role, start date, team, buddy). 2. AI Studio rule: on form submit → Teammate triggered. 3. Teammate prompt: using role and team, create subtasks from the onboarding template, personalize task names with new hire's name, assign buddy from team roster. 4. Create a 30-60-90 check-in task series with due dates calculated from start date. AIDM TIP: Store the onboarding task template as a project template in Asana — the Teammate duplicates and customizes it. Est. 2-3 days.",
+    "skills": [
+      "Personalization",
+      "Task generation",
+      "Template automation"
+    ],
+    "examples": [
+      "Generate a personalized onboarding task list from a template when a new hire joins",
+      "Assign a buddy automatically based on team and role",
+      "Create 30-60-90 day check-in tasks with calculated due dates"
+    ],
+    "starter_tasks": [
+      "Set up onboarding tasks for [new hire name] starting [date]",
+      "Who is the buddy assigned for [new hire]?",
+      "What onboarding tasks are still incomplete for [new hire]?"
+    ],
+    "conversation_hook": "Every new hire gets a different onboarding experience depending on who manages theirs. What if the whole process — task lists, buddy assignment, check-ins — kicked off automatically the moment the offer was accepted?",
+    "value": "Consistent onboarding every time; managers save 2–4 hrs per new hire; better new hire experience",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Smart Projects to auto-create the onboarding project structure; combine with Smart Goals to set 30-60-90 day milestones"
+  },
+  {
+    "name": "Intake & Routing Agent",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Operations",
+      "IT"
+    ],
+    "jtbd": "Route work requests to the right team without manual triage",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Intake form in Asana; team and project structure defined; routing logic documented",
+    "how_to": "Teammate reads new form submissions, classifies the request, assigns to the correct team, and sets priority",
+    "implementation_notes": "1. Define routing taxonomy: request types → team/project mappings (document in a Google Sheet or Asana custom field). 2. Build intake form with key fields (request type, urgency, description). 3. AI Studio trigger: form submission. 4. Teammate prompt: classify request by type, map to correct team using taxonomy, set priority based on urgency field, create a task in the right project. AIDM TIP: Include a 'confidence check' — if classification confidence is low, route to a triage queue instead of auto-assigning. Est. 2-3 days.",
+    "skills": [
+      "Request classification",
+      "Routing logic",
+      "Priority assignment"
+    ],
+    "examples": [
+      "Classify incoming requests and route to the right team automatically",
+      "Set priority based on urgency and request type",
+      "Create a task in the correct project without manual triage"
+    ],
+    "starter_tasks": [
+      "Route this request to the right team",
+      "What's the priority level for this incoming request?",
+      "Show me all requests that came in today and how they were routed"
+    ],
+    "conversation_hook": "How much of your team's day is spent just figuring out where to send things? An intake agent can classify and route every request automatically — with full audit trail.",
+    "value": "Eliminates manual triage; faster response times; fewer misrouted tickets; full routing audit trail",
+    "credit_intensity": "Low",
+    "used_by": [
+      "Array Behavioral Care",
+      "HubSpot"
+    ],
+    "smart_workflow_pairing": "Pair with Smart Rules to trigger SLA timers on routed tasks; combine with Support Ticket Classifier for IT-specific routing"
+  },
+  {
+    "name": "Campaign Brief Writer",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Marketing"
+    ],
+    "jtbd": "Turn scattered notes and strategy docs into execution-ready campaign briefs",
+    "difficulty": "Light config",
+    "prerequisites": "AI Teammates enabled; campaign notes or strategy doc available in Asana task",
+    "how_to": "Attach notes to a task and trigger the Teammate; it drafts a structured brief with goals, audience, channels, deliverables, and KPIs",
+    "implementation_notes": "1. Create a 'Campaign Kickoff' task template with a standard notes field. 2. Teammate trigger: when task is moved to 'Brief Requested' section. 3. Prompt: extract campaign objective, target audience, key messages, channels, deliverables, timeline, and success metrics from the notes. Output as a structured brief using a defined template. 4. Post the brief as a task description or attachment. AIDM TIP: Include a 'Gap Finder' instruction — if any required section is missing from the notes, add a flagged placeholder. Est. 1 hour.",
+    "skills": [
+      "Brief writing",
+      "Gap detection",
+      "Content structuring"
+    ],
+    "examples": [
+      "Transform kickoff notes into a formatted campaign brief in seconds",
+      "Flag missing info (audience, KPIs) before creative work starts",
+      "Standardize brief format across all campaigns and regions"
+    ],
+    "starter_tasks": [
+      "Turn my strategy doc into a campaign brief",
+      "Review this brief and flag what's missing",
+      "Standardize this brief to match our template"
+    ],
+    "conversation_hook": "How long does it take your team to get from a kickoff call to a brief that creative can actually act on? This Teammate does it in under a minute from your notes.",
+    "value": "Kickoff-to-brief time cut from days to minutes; consistent format; creative team never starts with incomplete direction",
+    "credit_intensity": "Low",
+    "used_by": [
+      "RBC",
+      "SHI"
+    ],
+    "smart_workflow_pairing": "Pair with Content Brief Generator (AI Studio) for fully automated brief-to-project creation; combine with Smart Projects to scaffold the campaign project from the brief"
+  },
+  {
+    "name": "Content Localization Manager",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Marketing"
+    ],
+    "jtbd": "Adapt campaign assets for global markets without losing brand voice",
+    "difficulty": "Light config",
+    "prerequisites": "AI Teammates enabled; source content in Asana; target markets and brand voice guidelines defined",
+    "how_to": "Submit content for localization via a task; Teammate adapts it for target markets, flags cultural sensitivities, and ensures brand consistency",
+    "implementation_notes": "1. Create a 'Localization Request' task template (fields: source content, target markets, tone guidance). 2. Teammate trigger: task assigned to the Localization Teammate. 3. Prompt: for each target market, transcreate the content (not literal translation), maintain brand voice, flag cultural sensitivities, note text expansion/contraction for design. 4. Output: separate subtask per market with localized content. AIDM TIP: Include a global glossary in the Teammate context — key product terms that must remain consistent across all markets. Est. 1-2 hours.",
+    "skills": [
+      "Transcreation",
+      "Cultural adaptation",
+      "Brand voice consistency"
+    ],
+    "examples": [
+      "Adapt campaign copy for 5 markets while maintaining brand voice",
+      "Flag phrases that don't translate well culturally before sending to design",
+      "Maintain consistent product terminology across all localized assets"
+    ],
+    "starter_tasks": [
+      "Adapt this campaign copy for EMEA markets",
+      "Flag any cultural sensitivities in this content for the APAC rollout",
+      "Ensure our product names are consistent across all localized versions"
+    ],
+    "conversation_hook": "How many weeks does your global campaign launch add for localization? This Teammate adapts content for every market in minutes — with cultural flags, not just literal translation.",
+    "value": "Localization time cut from weeks to hours; consistent brand voice globally; fewer cultural missteps before launch",
+    "credit_intensity": "Low",
+    "used_by": [
+      "COS",
+      "Fujitsu"
+    ],
+    "smart_workflow_pairing": "Combine with Campaign Brief Writer to localize briefs before creative starts; pair with Brand Auditor to validate localized assets against guidelines"
+  },
+  {
+    "name": "Brand Auditor",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Marketing"
+    ],
+    "jtbd": "Catch brand and compliance issues in assets before they go to market",
+    "difficulty": "Light config",
+    "prerequisites": "Brand guidelines documented and accessible; AI Teammates enabled; assets uploaded or linked in Asana",
+    "how_to": "Submit assets for review; Teammate checks against brand guidelines, flags violations by severity, and provides specific correction guidance",
+    "implementation_notes": "1. Store brand guidelines as a reference doc linked in the Teammate context. 2. Create 'Brand Review' task template. 3. Trigger: task moved to 'Pending Brand Review'. 4. Prompt: review the asset against the brand book — check typography, colors, logo usage, tone of voice. Grade violations as Critical (wrong logo color, off-brand messaging) vs. Suggested (could be punchier). Provide specific correction for each flag. AIDM TIP: Attach brand guidelines as a PDF to the Teammate's knowledge base, not just a description. Est. 1 hour.",
+    "skills": [
+      "Brand compliance",
+      "Asset review",
+      "Guideline enforcement"
+    ],
+    "examples": [
+      "Check assets against brand guidelines and flag violations by severity",
+      "Identify when copy tone doesn't match the brand's voice",
+      "Flag logo misuse, wrong colors, or off-brand language automatically"
+    ],
+    "starter_tasks": [
+      "Audit this asset against our brand guidelines",
+      "Does this copy match our brand voice?",
+      "What are the critical brand violations in this campaign?"
+    ],
+    "conversation_hook": "How often does off-brand content slip through because there weren't enough reviewers? This Teammate audits every asset against your guidelines automatically — critical violations flagged before production even starts.",
+    "value": "Brand compliance on every asset without bottlenecking production; critical violations caught early; consistent customer experience",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Content Localization Manager for global brand compliance; pair with Smart Rules to block assets from advancing without brand approval"
+  },
+  {
+    "name": "Launch Planner",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Marketing",
+      "Operations"
+    ],
+    "jtbd": "Build milestone-driven launch timelines and flag hidden dependencies before they hit the critical path",
+    "difficulty": "Light config",
+    "prerequisites": "Launch scope and go-live date defined; AI Teammates enabled",
+    "how_to": "Provide launch goals and target date; Teammate builds a backward-planned timeline with milestones, dependencies, and risk buffers",
+    "implementation_notes": "1. Create a 'Launch Planning' task with fields: go-live date, launch type, key deliverables, team. 2. Teammate trigger: task tagged 'launch-planning'. 3. Prompt: working backward from the go-live date, create milestones (Creative Freeze, Legal Approval, QA, Soft Launch, Full Launch), identify dependencies, add 20% buffer to complex stages, flag any timeline that requires fewer than X days. 4. Output: milestone task list with due dates. AIDM TIP: Include 'past launch patterns' in the prompt context — reference a previous similar launch project so the Teammate can spot forgotten steps. Est. 1 hour.",
+    "skills": [
+      "Timeline planning",
+      "Dependency mapping",
+      "Risk buffering"
+    ],
+    "examples": [
+      "Build a backward-planned launch timeline from a go-live date",
+      "Flag dependencies that could delay the critical path",
+      "Add buffer zones to high-risk stages automatically"
+    ],
+    "starter_tasks": [
+      "Build a launch plan for our product release on [date]",
+      "What dependencies could delay our August 7 launch?",
+      "Flag any stages in this launch plan that are unrealistically tight"
+    ],
+    "conversation_hook": "Launch delays usually come from dependencies nobody mapped. What if your launch timeline was built automatically — with dependencies and buffers — the moment you set a go-live date?",
+    "value": "Launch planning cut from days to hours; hidden dependencies surfaced early; teams ship on time more consistently",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Smart Projects to scaffold the launch project; combine with Risk & Blocker Monitor to track milestone health after planning is done"
+  },
+  {
+    "name": "IT Help Desk Bot",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "IT"
+    ],
+    "jtbd": "Resolve internal IT questions 24/7 without increasing headcount",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "IT knowledge base or help docs available; AI Studio enabled; Slack or Asana intake channel defined",
+    "how_to": "Build a Studio agent trained on IT docs that answers employee questions, provides step-by-step troubleshooting, and escalates to a human when needed",
+    "implementation_notes": "1. Compile IT knowledge base: troubleshooting guides, policies, VPN/SSO docs. Upload to AI Studio as reference material. 2. Build Studio agent: input = employee question. Steps: (a) classify question type, (b) search knowledge base, (c) draft response with numbered steps. 3. Escalation rule: if no KB match found → create a task in IT triage queue with full context. 4. Deploy via Asana form or Slack integration. AIDM TIP: Include a 'Security Guardrail' instruction — never ask for passwords, always reference official policy. Tier: AI Studio Pro+. Est. 3-5 days.",
+    "skills": [
+      "Knowledge lookup",
+      "Troubleshooting guidance",
+      "Escalation routing"
+    ],
+    "examples": [
+      "Answer IT questions from internal docs with step-by-step instructions",
+      "Create a support ticket automatically when the question can't be resolved",
+      "Explain IT policies in plain language without jargon"
+    ],
+    "starter_tasks": [
+      "How do I reset my VPN access?",
+      "What's our policy on BYOD devices?",
+      "I can't connect to the printer on Floor 3 — help me troubleshoot"
+    ],
+    "conversation_hook": "What percentage of your IT tickets are repetitive 'how do I' questions? An IT Help Desk Bot answers those 24/7 from your own docs — and escalates the ones that actually need a human.",
+    "value": "40-50% reduction in Tier 1 ticket volume; 24/7 availability; IT team focuses on complex work",
+    "credit_intensity": "High",
+    "used_by": [
+      "Array Behavioral Care",
+      "Fujitsu"
+    ],
+    "smart_workflow_pairing": "Pair with Support Ticket Classifier for automated triage of escalated tickets; combine with IT Compliance Auditor for policy-related questions"
+  },
+  {
+    "name": "IT Compliance Auditor",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "IT",
+      "Legal"
+    ],
+    "jtbd": "Stay audit-ready by continuously checking projects against compliance standards",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Compliance framework defined (SOC2, ISO 27001, GDPR); project documentation in Asana; AI Studio enabled",
+    "how_to": "Teammate reviews project plans and documentation against regulatory requirements, flags gaps with specific control references, and generates remediation tasks",
+    "implementation_notes": "1. Define compliance checklist by framework (SOC2 CC6.1-CC9.2, ISO 27001 Annex A controls). Store as structured reference doc. 2. Studio trigger: periodic schedule (weekly) or manual review request. 3. Teammate prompt: for each project in scope, check for required evidence (access control review, encryption docs, approval timestamps). Map gaps to specific control IDs. Output: compliance gap report with tasks. 4. Create remediation tasks automatically for each gap. AIDM TIP: Zero hallucination mode — instruct the Teammate to flag 'insufficient data' rather than guess on regulatory requirements. Est. 3-4 days.",
+    "skills": [
+      "Regulatory mapping",
+      "Gap detection",
+      "Remediation planning"
+    ],
+    "examples": [
+      "Audit project plans against SOC2 controls and flag specific gaps",
+      "Generate a compliance readiness report with remediation tasks",
+      "Translate regulatory requirements into plain-language action items"
+    ],
+    "starter_tasks": [
+      "Audit this project against our SOC2 requirements",
+      "What compliance gaps do we have before the audit?",
+      "Generate a compliance readiness report for this quarter"
+    ],
+    "conversation_hook": "How much of your team's time goes into manual audit prep every quarter? This Teammate runs continuously — flagging gaps as they appear, not the week before the auditor arrives.",
+    "value": "Continuous audit readiness vs. quarterly scramble; every gap mapped to a specific control; remediation tracked in Asana",
+    "credit_intensity": "Medium",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Smart Rules to block project advancement when compliance tasks are incomplete"
+  },
+  {
+    "name": "Incident Postmortem Assistant",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "IT",
+      "Operations"
+    ],
+    "jtbd": "Turn incidents into learning faster with structured postmortems that don't get skipped",
+    "difficulty": "Light config",
+    "prerequisites": "Incident task with timeline comments; AI Teammates enabled",
+    "how_to": "After an incident is resolved, Teammate synthesizes the timeline, extracts action items, and drafts a postmortem outline",
+    "implementation_notes": "1. Teammate trigger: task moved to 'Resolved' in the incidents project. 2. Prompt: (a) synthesize incident timeline from task comments and updates, (b) identify contributing factors and root cause hypothesis, (c) extract action items with owners, (d) draft postmortem in standard format (Summary / Timeline / Root Cause / Action Items). 3. Output: post as task description + create subtasks for each action item. AIDM TIP: Add a 'blame-free' instruction to the prompt — focus on process failures, not individuals. Est. 30 min.",
+    "skills": [
+      "Timeline synthesis",
+      "Root cause analysis",
+      "Action item extraction"
+    ],
+    "examples": [
+      "Synthesize incident timeline from task comments into a structured postmortem",
+      "Extract action items with owners from incident notes",
+      "Draft a blame-free root cause analysis from event data"
+    ],
+    "starter_tasks": [
+      "Draft a postmortem for the incident resolved today",
+      "What action items came out of this incident?",
+      "Synthesize the timeline from comments on this incident task"
+    ],
+    "conversation_hook": "How many incidents get fully documented vs. 'we'll write the postmortem later'? This Teammate drafts it automatically when the incident closes — before the context is lost.",
+    "value": "Postmortem completion rate increases dramatically; action items tracked; institutional learning compounds over time",
+    "credit_intensity": "Low",
+    "used_by": [
+      "Fujitsu"
+    ],
+    "smart_workflow_pairing": "Pair with Trend Analyst / Support Ticket Classifier to detect patterns across incidents over time"
+  },
+  {
+    "name": "RAID Tracker & Status Rollup",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Operations",
+      "Strategic Ops"
+    ],
+    "jtbd": "Maintain real-time visibility into risks, assumptions, issues, and dependencies without manual tracking",
+    "difficulty": "Light config",
+    "prerequisites": "Projects with task comments and status fields; RAID project or section created; AI Teammates enabled",
+    "how_to": "Teammate scans project activity, collects RAID items from comments and task updates, and drafts a weekly status rollup",
+    "implementation_notes": "1. Create a RAID tracking project with sections: Risks, Assumptions, Issues, Dependencies. 2. Teammate trigger: weekly schedule (Thursday EOD). 3. Prompt: scan all active project tasks and comments for mentions of risks, blockers, decisions, and dependencies. Classify each item, create/update tasks in the RAID project. Draft a 1-page status summary for leadership. 4. Output: updated RAID project + status comment. AIDM TIP: Train teams to use trigger phrases ('RISK:', 'DEPENDENCY:', 'BLOCKER:') in comments to improve Teammate extraction accuracy. Est. 1 hour.",
+    "skills": [
+      "RAID management",
+      "Cross-project scanning",
+      "Status reporting"
+    ],
+    "examples": [
+      "Collect risks and blockers from project comments and add to the RAID log",
+      "Draft a weekly RAID summary for the program manager",
+      "Flag unresolved dependencies that could impact the timeline"
+    ],
+    "starter_tasks": [
+      "Scan this program for all open risks and blockers",
+      "Draft a RAID summary for our weekly PMO review",
+      "What dependencies are unresolved across this portfolio?"
+    ],
+    "conversation_hook": "How often does your RAID log fall behind because nobody has time to update it? This Teammate keeps it current automatically — scanning comments and surfacing what matters.",
+    "value": "RAID log stays current without manual effort; risks surface before they become crises; PMO reporting automated",
+    "credit_intensity": "Medium",
+    "used_by": [
+      "Aetna"
+    ],
+    "smart_workflow_pairing": "Pair with Risk & Blocker Monitor for daily alerting; combine with Executive Briefing Generator (Dash) to include RAID summary in leadership updates"
+  },
+  {
+    "name": "Close Checklist Coordinator",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Finance"
+    ],
+    "jtbd": "Run a predictable financial close without chasing owners for updates",
+    "difficulty": "Light config",
+    "prerequisites": "Monthly close task list in Asana; team members and tasks defined; AI Teammates enabled",
+    "how_to": "Teammate tracks close tasks, nudges owners on pending items, and highlights blockers for the controller",
+    "implementation_notes": "1. Create a Close Checklist template project with all close tasks, owners, and due dates. 2. Teammate trigger: daily schedule during close period (last 5 business days of month). 3. Prompt: check close task completion status. For tasks due today or overdue, send a nudge comment on the task. Identify tasks where a blocker is mentioned. Draft a close status summary for the controller. 4. Output: comments on individual tasks + daily status post on the close overview task. AIDM TIP: Add escalation logic — if a task is 2+ days overdue, escalate to the controller with an '@mention'. Est. 45 min.",
+    "skills": [
+      "Task monitoring",
+      "Owner nudging",
+      "Close status tracking"
+    ],
+    "examples": [
+      "Track close task completion and nudge owners on pending items",
+      "Identify blockers in the close process before they delay the books",
+      "Draft a daily close status for the controller"
+    ],
+    "starter_tasks": [
+      "What close tasks are still open and who owns them?",
+      "Send reminders to owners of overdue close tasks",
+      "Draft a close status update for today"
+    ],
+    "conversation_hook": "How much of your close process is the controller chasing people for status? This Teammate tracks every task, nudges every owner, and surfaces blockers — so close doesn't slip.",
+    "value": "More predictable close cycles; fewer missed deadlines; controller spends time on exceptions, not follow-up",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Invoice & Exception Triage to handle exceptions during close; pair with Budget Variance Commentary for the post-close narrative"
+  },
+  {
+    "name": "Budget Variance Commentary",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Finance"
+    ],
+    "jtbd": "Generate plain-English budget variance explanations faster than any analyst",
+    "difficulty": "Light config",
+    "prerequisites": "Actuals and budget data available in a task or linked doc; AI Teammates enabled",
+    "how_to": "Provide actuals vs. plan data; Teammate drafts variance commentary in plain language, highlights key drivers, and flags unusual patterns",
+    "implementation_notes": "1. Create a 'Variance Commentary' task template with fields: period, budget, actuals, prior period. 2. Teammate trigger: task tagged 'variance-review'. 3. Prompt: compare actuals to plan. For each line item with variance > threshold, explain the driver in plain English, note if it's favorable/unfavorable, call out anything that warrants further investigation. Format as a CFO-ready narrative. 4. Output: variance commentary as task description. AIDM TIP: Include a 'Conservative Estimating' instruction — present a Low/Medium/High range if trend data is limited. Est. 30 min.",
+    "skills": [
+      "Financial analysis",
+      "Variance explanation",
+      "Narrative writing"
+    ],
+    "examples": [
+      "Draft plain-English variance explanations from actuals vs. plan data",
+      "Flag unusual spending patterns that warrant CFO attention",
+      "Format variance commentary as a board-ready narrative"
+    ],
+    "starter_tasks": [
+      "Draft variance commentary for this month's P&L",
+      "What are the key drivers of the Q2 budget variance?",
+      "Flag any line items that look unusual in these actuals"
+    ],
+    "conversation_hook": "How long does it take your FP&A team to write variance commentary every month? This Teammate drafts it in minutes from your actuals — CFO-ready narrative, no blank page.",
+    "value": "Variance commentary drafted in minutes vs. hours; analysts focus on insights, not writing; CFO gets cleaner narratives faster",
+    "credit_intensity": "Low",
+    "used_by": [
+      "REWE"
+    ],
+    "smart_workflow_pairing": "Pair with Close Checklist Coordinator for full close cycle automation; combine with Smart Charts for visual budget trend analysis"
+  },
+  {
+    "name": "Decision Tracker",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Strategic Ops",
+      "Cross-Functional"
+    ],
+    "jtbd": "Build a searchable record of every decision and why it was made — eliminating decision debt",
+    "difficulty": "Light config",
+    "prerequisites": "Projects with task comments and meeting notes; AI Teammates enabled",
+    "how_to": "Teammate scans project comments and notes, extracts decisions with rationale, logs them in a Decision Register, and flags conflicts",
+    "implementation_notes": "1. Create a 'Decision Register' project with fields: Decision, Rationale, Decision Maker, Date, Status (Active/Superseded). 2. Teammate trigger: weekly scan or triggered when 'DECISION:' tag is added to a comment. 3. Prompt: extract decisions from comments/tasks, format as 'Decision Statement' (not raw text), identify who made the call, capture the why. Flag if new decision conflicts with a prior logged decision. 4. Output: new task in Decision Register per decision. AIDM TIP: Instruct the Teammate to mark old decisions as 'Superseded' (not delete) when a change is made — full audit trail. Est. 1 hour.",
+    "skills": [
+      "Decision extraction",
+      "Conflict detection",
+      "Organizational memory"
+    ],
+    "examples": [
+      "Extract decisions from project comments and log with rationale",
+      "Flag when a new decision conflicts with a prior one",
+      "Build a searchable decision history for a program"
+    ],
+    "starter_tasks": [
+      "Log all decisions made in this project this week",
+      "What decisions have been made about the August 7 launch?",
+      "Check if this new decision conflicts with anything we decided previously"
+    ],
+    "conversation_hook": "How much time does your team spend relitigating decisions that were already made? This Teammate builds a living decision log — so new team members get 6 months of context in 10 minutes.",
+    "value": "Decision debt eliminated; new team members ramp faster; fewer repeated debates; full audit trail for compliance",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with RAID Tracker for full program governance; combine with Executive Briefing Generator to include key decisions in leadership updates"
+  },
+  {
+    "name": "Business Case Builder",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Strategic Ops",
+      "Finance"
+    ],
+    "jtbd": "Build funding requests so logically sound they minimize back-and-forth with budget holders",
+    "difficulty": "Light config",
+    "prerequisites": "Initiative description and goals available; past project data for benchmarking; AI Teammates enabled",
+    "how_to": "Provide initiative details; Teammate structures a business case with ROI projections, the cost of inaction, and a financial model",
+    "implementation_notes": "1. Create a 'Business Case' task template (fields: initiative name, problem statement, proposed solution, budget ask, timeline). 2. Teammate trigger: task tagged 'business-case'. 3. Prompt: structure the case as: Executive Summary → Problem → Solution → Financial Analysis (ROI with Low/Medium/High ranges) → Implementation Plan → Risks. Reference past project data for benchmarks. Include 'Do Nothing' scenario. List all assumptions explicitly. 4. Output: business case as task description. AIDM TIP: Always provide Low/Medium/High ROI ranges — never a single aggressive number. Est. 1 hour.",
+    "skills": [
+      "ROI modeling",
+      "Business case structuring",
+      "Benchmark analysis"
+    ],
+    "examples": [
+      "Build a structured business case with ROI projections from initiative notes",
+      "Quantify the cost of inaction to strengthen a funding request",
+      "Benchmark projected ROI against past similar projects"
+    ],
+    "starter_tasks": [
+      "Build a business case for this AI initiative",
+      "Estimate ROI for this project based on past performance",
+      "What's the cost of not doing this initiative?"
+    ],
+    "conversation_hook": "How long does it take your team to get budget approval? This Teammate builds a business case from your notes — with ROI ranges, benchmarks, and the cost of inaction — so leadership can decide without a follow-up meeting.",
+    "value": "Budget approval cycles shortened; stronger funding requests; analysts focus on strategy, not document assembly",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Decision Tracker to log approval decisions; pair with Smart Goals to set measurable success criteria for approved initiatives"
+  },
+  {
+    "name": "Sprint Accelerator",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Product & Engineering"
+    ],
+    "jtbd": "Hit sprint commitments consistently by catching scope creep and velocity drops early",
+    "difficulty": "Light config",
+    "prerequisites": "Sprint tasks with estimates in Asana; historical sprint data available; AI Teammates enabled",
+    "how_to": "Teammate tracks sprint progress, forecasts completion risk, flags stale tasks, and facilitates retrospectives",
+    "implementation_notes": "1. Create sprint project with tasks, story points, and owners. 2. Teammate trigger: daily schedule (standup time). 3. Daily prompt: compare tasks completed vs. planned velocity. Flag tasks stale for 48+ hours. Forecast completion probability based on last 3-5 sprints. If new tasks added mid-sprint, calculate scope creep impact. 4. Weekly: generate retrospective themes from blockers and velocity data. AIDM TIP: Include 'Blame-Free' instruction for retro output — focus on process patterns, not individual performance. Est. 1 hour.",
+    "skills": [
+      "Velocity tracking",
+      "Scope creep detection",
+      "Retrospective facilitation"
+    ],
+    "examples": [
+      "Track daily sprint progress and forecast completion risk",
+      "Flag tasks that haven't moved in 48 hours",
+      "Generate retrospective themes from sprint data"
+    ],
+    "starter_tasks": [
+      "What's the sprint completion forecast based on current velocity?",
+      "Which tasks are stale and need attention?",
+      "Generate retro themes from this sprint's blockers"
+    ],
+    "conversation_hook": "How many sprints end with the team scrambling on the last day because scope crept in quietly? This Teammate tracks velocity daily and flags the warning signs before they become misses.",
+    "value": "Sprint commitment hit rate improves; scope creep caught early; retrospectives become data-driven; no more last-day surprises",
+    "credit_intensity": "Medium",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Spec Reviewer to validate stories before sprint planning; combine with Smart Rules to auto-close sprint tasks when acceptance criteria are met"
+  },
+  {
+    "name": "Spec Reviewer",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Product & Engineering"
+    ],
+    "jtbd": "Catch vague requirements and missing edge cases before a single line of code is written",
+    "difficulty": "Light config",
+    "prerequisites": "PRD or spec document in Asana task; AI Teammates enabled",
+    "how_to": "Submit a spec for review; Teammate audits for ambiguity, missing edge cases, and undefined acceptance criteria",
+    "implementation_notes": "1. Teammate trigger: task moved to 'Spec Review' section. 2. Prompt: scan the spec for (a) vague language ('fast', 'intuitive', 'user-friendly') — replace with measurable requirements, (b) missing edge cases (error states, null inputs, concurrent users), (c) missing acceptance criteria — draft in Given/When/Then format for each feature. Flag all TBDs. 3. Output: annotated spec with review comments as task comments. AIDM TIP: Add instruction to 'stress-test for the unhappy path' — most specs define the happy path but ignore failure modes. Est. 30 min.",
+    "skills": [
+      "Spec auditing",
+      "Acceptance criteria writing",
+      "Edge case detection"
+    ],
+    "examples": [
+      "Flag vague language in a PRD and suggest measurable alternatives",
+      "Draft Given/When/Then acceptance criteria from feature descriptions",
+      "Identify missing error states and edge cases in a spec"
+    ],
+    "starter_tasks": [
+      "Review this PRD and flag any ambiguous requirements",
+      "Draft acceptance criteria for the features in this spec",
+      "What edge cases are missing from this spec?"
+    ],
+    "conversation_hook": "How much engineering rework comes from specs that seemed clear at the time? This Teammate audits every PRD for gaps before estimation — so engineers don't discover surprises mid-build.",
+    "value": "Engineering rework reduced; specs complete before sprint planning; fewer 'that's not what I meant' moments",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Sprint Accelerator to feed clean specs into sprint planning; combine with Bug Investigator for post-release issue tracking"
+  },
+  {
+    "name": "Competitive Market Researcher",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Marketing",
+      "Strategic Ops"
+    ],
+    "jtbd": "Keep teams informed on competitive moves without dedicated analyst headcount",
+    "difficulty": "Light config",
+    "prerequisites": "AI Teammates enabled; competitor names and tracked topics defined; project for research output",
+    "how_to": "Schedule a Teammate to scan linked competitor content, synthesize key updates, and post a weekly competitive brief",
+    "implementation_notes": "1. Create a 'Competitive Intelligence' project with a Watchlist task (list competitor names, product areas to track). 2. Teammate trigger: weekly schedule (Monday AM). 3. Prompt: using the watchlist, synthesize recent updates across tracked competitors — look for product announcements, pricing changes, messaging shifts, executive moves. Format as a brief with a summary table and key implications for each competitor. Post as a task update. AIDM TIP: Keep the watchlist in a custom field on the trigger task — easy to update without reconfiguring the Teammate. Est. 1 hour.",
+    "skills": [
+      "Competitive monitoring",
+      "Market intelligence",
+      "Synthesis writing"
+    ],
+    "examples": [
+      "Synthesize competitive updates into a weekly brief from tracked sources",
+      "Flag pricing or positioning changes that require a response",
+      "Summarize competitor product announcements with implications for the team"
+    ],
+    "starter_tasks": [
+      "What did our top 3 competitors announce this week?",
+      "Summarize recent competitive moves in our market",
+      "Flag any competitive threats I should be aware of this month"
+    ],
+    "conversation_hook": "How is your team keeping up with competitor moves right now? If it's mostly ad hoc and relies on one person paying attention, a Teammate can systematize it — weekly brief, every Monday, from actual signals.",
+    "value": "Competitive awareness without dedicated analyst time; teams respond faster to market moves; no competitive blindspots",
+    "credit_intensity": "Medium",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Business Case Builder when a competitive threat requires a strategic response; combine with Smart Goals to track competitive positioning as an org-level metric"
+  },
+  {
+    "name": "Data Quality Manager",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Operations",
+      "Finance"
+    ],
+    "jtbd": "Prevent stale and incomplete project data from corrupting reporting and forecasts",
+    "difficulty": "Light config",
+    "prerequisites": "Projects with defined required fields; AI Teammates enabled",
+    "how_to": "Schedule a Teammate to audit project data for missing fields, stale tasks, and incomplete owners — post a weekly data quality report",
+    "implementation_notes": "1. Define data quality standards: required fields per project type (Owner, Due Date, Priority, Status for all tasks; Budget for finance projects). 2. Teammate trigger: weekly schedule (Sunday night or Monday AM before standups). 3. Prompt: scan all active projects — flag tasks missing required fields, tasks with due dates in the past that are still open, projects without a status update in 14+ days. Summarize violations by project and owner. 4. Output: data quality report task with violation list grouped by project. AIDM TIP: Include a 'severity' instruction — missing Owner is Critical (blocks routing and reporting), missing Priority is Warning (reduces forecast accuracy). Est. 45 min.",
+    "skills": [
+      "Data auditing",
+      "Completeness checking",
+      "Quality reporting"
+    ],
+    "examples": [
+      "Audit tasks for missing owners, due dates, and required custom fields",
+      "Flag projects that haven't had a status update in 2+ weeks",
+      "Generate a weekly data quality report grouped by project and severity"
+    ],
+    "starter_tasks": [
+      "Which tasks are missing required fields this week?",
+      "What projects have data quality issues that could affect reporting?",
+      "Show me all tasks that are overdue but still marked as open"
+    ],
+    "conversation_hook": "How confident are you that the data in your Asana portfolio is actually complete? Stale tasks and missing fields corrupt every dashboard downstream. This Teammate audits data quality every week before reports run.",
+    "value": "Reporting and forecasting accuracy improves; missing data caught before it propagates; teams develop better data hygiene habits",
+    "credit_intensity": "Low",
+    "used_by": [
+      "REWE"
+    ],
+    "smart_workflow_pairing": "Pair with Smart Fields to prevent missing data at the source; combine with Smart Charts for reliable visualizations once data quality improves"
+  },
+  {
+    "name": "Process Compliance Checklist",
+    "surface": "AI Teammates",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Operations",
+      "Legal"
+    ],
+    "jtbd": "Ensure every project follows required approval and compliance steps before advancing",
+    "difficulty": "Light config",
+    "prerequisites": "Process checklist defined per project type; AI Teammates enabled; projects with milestone stages",
+    "how_to": "Teammate validates that all required process gates are complete before a project can move to the next stage",
+    "implementation_notes": "1. Define process gates by project type (e.g., Campaign: Legal Review → Brand Approval → VP Sign-off before launch; Software: Security Review → QA → Accessibility Audit before release). 2. Teammate trigger: when project milestone task is completed. 3. Prompt: check whether all required gate tasks for this stage are complete. If yes: confirm advancement, create next-stage tasks. If no: list uncompleted gates with owners, block advancement with a comment on the milestone task. AIDM TIP: Use a 'bypass request' workflow — if a gate is being skipped intentionally, require the project lead to add a documented exception task before the Teammate will unblock. Est. 1 hour.",
+    "skills": [
+      "Gate validation",
+      "Process enforcement",
+      "Exception handling"
+    ],
+    "examples": [
+      "Check that all required approvals are complete before a project stage advances",
+      "Block projects from advancing if compliance gates are missed",
+      "Generate an exception workflow when a required step is being intentionally skipped"
+    ],
+    "starter_tasks": [
+      "Have all required gates been completed for this project stage?",
+      "What approvals are still missing before we can launch?",
+      "Show me which projects bypassed required compliance steps this quarter"
+    ],
+    "conversation_hook": "How often do projects reach launch only to discover a required legal review or accessibility audit was skipped? This Teammate enforces process gates automatically — nothing advances without the right sign-offs.",
+    "value": "Process compliance enforced at scale; audit trail of every approval; exceptions documented rather than just ignored",
+    "credit_intensity": "Low",
+    "used_by": [
+      "Aetna"
+    ],
+    "smart_workflow_pairing": "Pair with IT Compliance Auditor for regulatory gate validation; combine with Smart Rules to trigger automatic gate reminders when a project reaches a milestone"
+  },
+  {
+    "name": "Customer Q&A Bot",
+    "surface": "AI Studio",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Customer Success",
+      "IT"
+    ],
+    "jtbd": "Answer repetitive customer questions without human intervention",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "AI Studio enabled; knowledge base or help docs available; customer-facing channel defined",
+    "how_to": "Build a Studio agent trained on help docs and FAQs; embed in a customer Slack channel or portal; route unanswered questions to a human queue",
+    "implementation_notes": "1. Compile knowledge base: help articles, FAQs, policy docs. Upload to AI Studio. 2. Studio agent steps: (a) classify question type, (b) search KB, (c) draft answer with numbered steps and source citation, (d) if no match → create escalation task in CS queue with full context. 3. Deploy via Asana form or Slack webhook. 4. Monitor: track escalation rate weekly; retrain on escalated questions to improve coverage. AIDM TIP: Include security guardrail — 'never provide account-specific data, always refer to official policy.' Tier: Studio Pro+. Est. 3-5 days.",
+    "skills": [
+      "Knowledge retrieval",
+      "Question classification",
+      "Escalation routing"
+    ],
+    "examples": [
+      "Answer customer questions from help docs with cited, step-by-step responses",
+      "Create a support task automatically when a question can't be resolved",
+      "Classify question type to route to the right knowledge domain"
+    ],
+    "starter_tasks": [
+      "How do I set up my first project in Asana?",
+      "What's the difference between tasks and subtasks?",
+      "How do I integrate Asana with Slack?"
+    ],
+    "conversation_hook": "What percentage of your CS team's time goes to answering the same questions? A Q&A Bot handles the repetitive ones 24/7 from your own docs — and escalates the complex ones with full context already attached.",
+    "value": "Deflects 40-50% of Tier 1 volume; faster response times; CS team focuses on strategic relationships",
+    "credit_intensity": "High",
+    "used_by": [
+      "Array Behavioral Care"
+    ],
+    "smart_workflow_pairing": "Pair with Intake & Routing Agent to route escalated questions to the right CS team; combine with Renewal Prep Assistant for pre-renewal Q&A support"
+  },
+  {
+    "name": "Renewal Prep Assistant",
+    "surface": "AI Studio",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Customer Success",
+      "Finance"
+    ],
+    "jtbd": "Prepare CSMs for renewal conversations with full account context in minutes, not hours",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Account activity tracked in Asana; renewal date field populated; CRM data accessible",
+    "how_to": "Studio agent synthesizes account activity, product usage, open risks, and renewal date into a one-page briefing when triggered",
+    "implementation_notes": "1. Build Studio agent triggered by 'renewal date within 30 days' rule. 2. Agent steps: (a) pull all account tasks and status from Asana, (b) identify open risks/escalations, (c) summarize product usage trends (if CRM connected), (d) draft renewal briefing: Account Health, Key Risks, Opportunities, Recommended Talk Track. 3. Output: post as a task comment or create a 'Renewal Prep' subtask. AIDM TIP: Connect CRM via Zapier if native integration not available — the key inputs are health score, usage data, and open support tickets. Tier: Studio Pro. Est. 2-3 days.",
+    "skills": [
+      "Account synthesis",
+      "Risk identification",
+      "Talk track generation"
+    ],
+    "examples": [
+      "Generate a renewal briefing from account activity and health signals",
+      "Identify open risks and opportunities before a renewal call",
+      "Draft a recommended talk track based on account history"
+    ],
+    "starter_tasks": [
+      "Generate a renewal brief for this account",
+      "What are the key risks for our renewal with [customer]?",
+      "What's the recommended talk track for this renewal conversation?"
+    ],
+    "conversation_hook": "How long does it take your CSMs to prep for a renewal? This agent pulls everything — usage, open risks, account history — into a one-page brief, triggered automatically 30 days out.",
+    "value": "Renewal prep cut from hours to minutes; CSMs walk into every renewal fully prepared; higher confidence, higher win rates",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Customer Q&A Bot for pre-renewal self-service; pair with RAID Tracker to surface any open program risks before the renewal call"
+  },
+  {
+    "name": "Content Brief Generator",
+    "surface": "AI Studio",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Marketing"
+    ],
+    "jtbd": "Speed up the content creation kickoff from intake to brief to project",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Intake form with project details; AI Studio enabled; content brief template defined",
+    "how_to": "Form submission triggers Studio agent to generate a structured brief and create a project in Asana with tasks pre-populated",
+    "implementation_notes": "1. Build intake form: content type, goal, audience, channels, deadline, budget. 2. Studio agent steps: (a) extract brief fields from form data, (b) generate structured brief (Objective, Audience, Key Messages, Deliverables, Timeline, KPIs), (c) create new Asana project from template, (d) populate project description with brief. 3. Assign the brief task to the requester for review. AIDM TIP: Use a 'Gap Finder' instruction — if any required brief field is empty, add a flagged placeholder rather than skipping it. Tier: Studio Pro. Est. 2 days.",
+    "skills": [
+      "Brief generation",
+      "Project scaffolding",
+      "Gap detection"
+    ],
+    "examples": [
+      "Generate a structured content brief from an intake form submission",
+      "Create an Asana project pre-populated with content tasks",
+      "Flag incomplete brief sections before work starts"
+    ],
+    "starter_tasks": [
+      "Generate a brief for this content request",
+      "What's missing from this content intake?",
+      "Create a project from this campaign brief"
+    ],
+    "conversation_hook": "How long does it take your team to go from a content request to a brief that creative can actually act on? This agent does it in under a minute from a form submission.",
+    "value": "Consistent, complete briefs every time; creative team starts faster; fewer revision cycles from unclear direction",
+    "credit_intensity": "Low",
+    "used_by": [
+      "SHI",
+      "Clio"
+    ],
+    "smart_workflow_pairing": "Pair with Campaign Brief Writer (Teammates) for ad-hoc brief creation; combine with Brand Auditor to review assets against the brief at end of production"
+  },
+  {
+    "name": "Project Health Analyzer",
+    "surface": "AI Studio",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Operations",
+      "Strategic Ops"
+    ],
+    "jtbd": "Get a consistent, objective read on project health across the portfolio without chasing PMs",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Projects with tasks, due dates, owners, and status updates populated in Asana",
+    "how_to": "Studio agent periodically reviews project data, scores health across dimensions, and generates summary reports",
+    "implementation_notes": "1. Define health scoring rubric: Timeline (% tasks on time), Resource (all tasks have owners), Scope (no tasks added in last 2 weeks without approval), Momentum (tasks completed per week). 2. Studio agent trigger: weekly schedule. 3. Agent steps: for each project in portfolio, score each dimension 1-5, calculate overall health score, flag any dimension below threshold. 4. Output: health report task with scores and recommendations per project. AIDM TIP: Include trend direction — is the project getting healthier or worse week over week? This is more actionable than a static score. Tier: Studio Pro. Est. 3 days.",
+    "skills": [
+      "Health scoring",
+      "Pattern detection",
+      "Portfolio reporting"
+    ],
+    "examples": [
+      "Score project health across timeline, resource, scope, and momentum dimensions",
+      "Flag the 3 projects most at risk across the portfolio",
+      "Show health trend week over week for each project"
+    ],
+    "starter_tasks": [
+      "Run a health check on this portfolio",
+      "Which projects are most at risk this week?",
+      "Show me health trends for the last 4 weeks"
+    ],
+    "conversation_hook": "Portfolio reviews shouldn't require chasing PMs for updates. This agent scores every project automatically on the same rubric every week — and flags what's declining before it fails.",
+    "value": "Portfolio health visible without meetings; at-risk projects identified early; consistent scoring eliminates subjectivity",
+    "credit_intensity": "Medium",
+    "used_by": [
+      "Aetna"
+    ],
+    "smart_workflow_pairing": "Combine with Risk & Blocker Monitor for real-time alerting between weekly health checks; pair with Smart Status to auto-update project status from health scores"
+  },
+  {
+    "name": "Support Ticket Classifier",
+    "surface": "AI Studio",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "IT",
+      "Customer Success"
+    ],
+    "jtbd": "Route every support ticket to the right queue instantly, with context already attached",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Ticket intake via Asana form; category taxonomy defined; team queues set up in Asana",
+    "how_to": "Studio agent reads new tickets, classifies by type and urgency, assigns to the correct team queue, and drafts an initial response",
+    "implementation_notes": "1. Define ticket taxonomy: category tree (Bug / Feature Request / How-To / Billing / Access) and urgency matrix. 2. Studio agent steps: (a) classify ticket by type and urgency using taxonomy, (b) determine routing based on classification, (c) assign to correct project/team, (d) draft initial response template for the agent. 3. For high-urgency tickets: auto-assign to senior team member. AIDM TIP: Add a 'duplicate detection' step — if a similar ticket was filed in the last 7 days, link them rather than creating a parallel thread. Tier: Studio Pro. Est. 2-3 days.",
+    "skills": [
+      "Ticket classification",
+      "Priority assignment",
+      "Auto-routing"
+    ],
+    "examples": [
+      "Classify incoming tickets by type and urgency automatically",
+      "Route tickets to the right team without manual triage",
+      "Draft an initial response template for the assigned agent"
+    ],
+    "starter_tasks": [
+      "Classify and route this new ticket",
+      "What's the priority for this incoming issue?",
+      "Show me all high-urgency tickets that came in today"
+    ],
+    "conversation_hook": "How many tickets get misrouted because someone had to make a judgment call under pressure? This agent classifies and routes every ticket the same way, every time — correct queue, right priority, response template ready.",
+    "value": "Faster first response; correct routing from the start; agents focus on resolution, not triage",
+    "credit_intensity": "Medium",
+    "used_by": [
+      "Array Behavioral Care",
+      "FTMO"
+    ],
+    "smart_workflow_pairing": "Combine with IT Help Desk Bot for Tier 1 deflection before tickets reach the classifier; pair with Incident Postmortem Assistant for high-severity ticket follow-up"
+  },
+  {
+    "name": "Contract Review Assistant",
+    "surface": "AI Studio",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Legal",
+      "Finance"
+    ],
+    "jtbd": "Surface key terms and risks in contracts before they reach full legal review",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Contracts uploaded to Asana or connected storage; AI Studio enabled; review checklist defined",
+    "how_to": "Studio agent parses uploaded contracts, extracts key dates, obligations, and risk flags, and creates a structured checklist task for legal",
+    "implementation_notes": "1. Define extraction checklist: effective date, expiration, renewal terms, payment obligations, liability caps, IP ownership, termination clauses. 2. Studio agent trigger: contract uploaded to designated Asana project. 3. Agent steps: (a) parse contract text, (b) extract each checklist item, (c) flag high-risk clauses (unlimited liability, auto-renewal without notice, IP assignment), (d) create checklist task for legal review. 4. Output: structured extraction task + risk flag summary. AIDM TIP: Zero hallucination instruction critical here — if a clause can't be found, say 'Not found' rather than assume. Tier: Studio Pro+. Est. 3 days.",
+    "skills": [
+      "Contract parsing",
+      "Risk flagging",
+      "Obligation extraction"
+    ],
+    "examples": [
+      "Extract key dates, obligations, and risk clauses from uploaded contracts",
+      "Flag high-risk terms (unlimited liability, IP assignment) before legal review",
+      "Create a structured checklist task from contract terms for legal to verify"
+    ],
+    "starter_tasks": [
+      "Extract the key terms from this contract",
+      "Flag any high-risk clauses in this agreement",
+      "What are our obligations and deadlines in this contract?"
+    ],
+    "conversation_hook": "How long does your legal team spend on contracts that could have been flagged as standard vs. non-standard before they even looked? This agent does the extraction — legal focuses on the exceptions.",
+    "value": "Legal team focuses on exceptions, not extraction; faster contract turnaround; fewer missed obligations",
+    "credit_intensity": "Medium",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Decision Tracker to log key contract terms as decisions; pair with Smart Rules to set expiration date reminders from extracted dates"
+  },
+  {
+    "name": "Campaign Brief Intake & Normalization",
+    "surface": "AI Studio",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Marketing"
+    ],
+    "jtbd": "Standardize every campaign intake request before it reaches the creative team",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "AI Studio enabled; intake form defined; routing logic documented",
+    "how_to": "Studio agent reads incoming campaign requests, extracts key details, validates completeness, standardizes the brief format, and routes for review",
+    "implementation_notes": "1. Build intake form (campaign type, goal, audience, channels, budget, timeline, assets needed). 2. Studio agent steps: (a) validate form completeness — flag missing required fields, (b) extract and normalize key data (standardize date formats, channel names, audience descriptions), (c) classify campaign type, (d) assign to the right team based on campaign type, (e) generate a formatted brief from the data. 3. Create project from template with brief attached. AIDM TIP: Add a 'conflict check' step — scan open campaigns for overlapping audiences or timelines that could cannibalize performance. Tier: Studio Pro. Est. 2-3 days.",
+    "skills": [
+      "Intake validation",
+      "Data normalization",
+      "Brief standardization",
+      "Conflict detection"
+    ],
+    "examples": [
+      "Validate campaign intake forms and flag missing required fields",
+      "Normalize brief data (dates, channels, audiences) to consistent formats",
+      "Route campaigns to the right team based on type and scope"
+    ],
+    "starter_tasks": [
+      "Validate this campaign intake and flag any gaps",
+      "Normalize this brief to our standard format",
+      "Are there any conflicts with other campaigns in this timeframe?"
+    ],
+    "conversation_hook": "How many campaigns start late because the brief arrived incomplete? This agent validates every intake form the moment it's submitted — flags gaps before anyone touches it.",
+    "value": "Campaigns start with complete, standardized briefs every time; fewer revision loops; production teams never blocked by missing info",
+    "credit_intensity": "Medium",
+    "used_by": [
+      "RBC",
+      "SHI",
+      "Clio"
+    ],
+    "smart_workflow_pairing": "Pair with Campaign Brief Writer (Teammates) for ad-hoc brief creation; combine with Launch Planner to auto-generate a launch timeline from the normalized brief"
+  },
+  {
+    "name": "Invoice & Exception Triage",
+    "surface": "AI Studio",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Finance"
+    ],
+    "jtbd": "Process invoices faster and flag exceptions before they hit the payment run",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "Invoice intake via Asana form or email; vendor/PO data accessible; AI Studio enabled",
+    "how_to": "Studio agent reviews submitted invoices, validates against PO data, flags anomalies, and routes for approval or exception handling",
+    "implementation_notes": "1. Build invoice intake form (vendor, amount, PO number, invoice date, line items). 2. Studio agent steps: (a) match invoice to PO — flag if no PO found, (b) check amount against PO value — flag if > threshold (e.g., 105% of PO), (c) check for duplicate invoice number in last 90 days, (d) classify: Approve / Exception / Escalate. 3. For Approve: route to AP team. For Exception/Escalate: create exception task with specific flag reason. AIDM TIP: Include a 'vendor whitelist' in the agent context — known vendors with clean history can have a higher auto-approve threshold. Tier: Studio Pro. Est. 2-3 days.",
+    "skills": [
+      "Invoice validation",
+      "Anomaly detection",
+      "Exception routing"
+    ],
+    "examples": [
+      "Match invoices to POs and flag amount discrepancies automatically",
+      "Detect duplicate invoices before they enter the payment run",
+      "Route clean invoices to approval and exceptions to review"
+    ],
+    "starter_tasks": [
+      "Validate this invoice against the PO",
+      "Are there any duplicate invoices from this vendor?",
+      "Show me all invoices flagged for exception this month"
+    ],
+    "conversation_hook": "How many exceptions make it to the payment run because nobody had time to check? This agent validates every invoice against your PO data and flags anomalies before they cost you money.",
+    "value": "AP processing speed increases; exceptions caught before payment; duplicate payments eliminated",
+    "credit_intensity": "Low",
+    "used_by": [
+      "FTMO",
+      "REWE"
+    ],
+    "smart_workflow_pairing": "Combine with Close Checklist Coordinator to ensure all invoices are processed before month close; pair with Budget Variance Commentary to include invoice exceptions in variance narrative"
+  },
+  {
+    "name": "Cross-Portfolio Status Synthesis",
+    "surface": "Dash",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional",
+      "Strategic Ops"
+    ],
+    "jtbd": "Instantly understand what's happening across all projects without chasing anyone for updates",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Projects in Asana; Dash enabled (included in AWM); status updates or task data present",
+    "how_to": "Ask Dash directly — no configuration needed; it reads existing project data and synthesizes an answer",
+    "implementation_notes": "No build required. Ensure projects have: (1) tasks with due dates and assignees, (2) at least one status update in the last 2 weeks. Ask: 'What's the status of [portfolio]?' For best results: run Smart Status on key projects first to give Dash richer data to synthesize. AIDM TIP: Teach customers to save their most-used Dash prompts — saved prompts make recurring queries (like weekly leadership updates) one-click. Est. 15 min setup.",
+    "skills": [
+      "Portfolio synthesis",
+      "Status aggregation",
+      "Natural language query"
+    ],
+    "examples": [
+      "Summarize the status of all active projects in a portfolio",
+      "Identify which projects are at risk across a program",
+      "Answer 'where do things stand?' without opening a single project"
+    ],
+    "starter_tasks": [
+      "What's the status of my active projects?",
+      "Which projects in my portfolio are at risk?",
+      "Give me a 3-sentence summary of where things stand across my team"
+    ],
+    "conversation_hook": "When your exec asks 'where do things stand?' how long does it take you to pull an answer together? With Dash, that answer is one question away — no meeting, no status report required.",
+    "value": "Leadership answers in seconds; fewer status meetings; CSMs can respond to exec questions on the spot",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Weekly Status Digest (Teammates) for a richer automated version; combine with Smart Status to give Dash better data to work with"
+  },
+  {
+    "name": "Executive Briefing Generator",
+    "surface": "Dash",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Strategic Ops",
+      "Cross-Functional"
+    ],
+    "jtbd": "Prepare exec-ready status summaries for leadership reviews without last-minute scrambles",
+    "difficulty": "Light config",
+    "prerequisites": "Portfolios with status updates; Dash enabled; preferred exec format defined",
+    "how_to": "Prompt Dash to synthesize portfolio status, surface top risks, and format for an exec audience; refine and save the prompt for weekly reuse",
+    "implementation_notes": "1. Ensure portfolios have current status updates (run Smart Status first if needed). 2. Draft your Dash prompt: 'Synthesize the status of [portfolio]. For each project: provide a 1-sentence status, note any risks or blockers, and indicate if it's On Track / At Risk / Off Track. Format as an exec briefing with a summary table.' 3. Refine the output 2-3 times to match your leadership's preferred format. 4. Save the prompt for weekly reuse. AIDM TIP: Add 'Focus on what requires a decision or action from leadership' to cut noise from the output. Est. 30 min.",
+    "skills": [
+      "Executive synthesis",
+      "Risk surfacing",
+      "Format customization"
+    ],
+    "examples": [
+      "Generate an exec-ready portfolio status summary for a leadership review",
+      "Surface the top 3 items requiring leadership attention this week",
+      "Format status across 10+ projects into a 1-page brief"
+    ],
+    "starter_tasks": [
+      "Generate an executive brief for my portfolio review",
+      "What needs leadership attention this week?",
+      "Summarize our portfolio status for the board update"
+    ],
+    "conversation_hook": "How much time do you spend assembling the portfolio update before every EBR? Dash synthesizes it from live project data — same quality, fraction of the time.",
+    "value": "EBR and QBR prep time cut significantly; consistent exec communication; no last-minute scrambles",
+    "credit_intensity": "Low",
+    "used_by": [
+      "REWE",
+      "Aetna"
+    ],
+    "smart_workflow_pairing": "Pair with RAID Tracker to include risk log in the briefing; combine with Status Reporter (AI Teammates) for fully automated weekly delivery"
+  },
+  {
+    "name": "Knowledge & Decision Search",
+    "surface": "Dash",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Find past decisions, context, and prior work without digging through Slack or old emails",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Work history in Asana; Dash enabled",
+    "how_to": "Ask Dash to find past decisions, relevant tasks, or similar prior projects — works immediately with no setup",
+    "implementation_notes": "No build required. Works immediately on existing Asana data. Best results when: (1) tasks have meaningful descriptions and comments, (2) projects have status updates, (3) work has been done in Asana (not just tracked). AIDM TIP: Encourage customers to use Asana as the system of record for decisions — the more context is in Asana, the more powerful Dash becomes. Est. 0 min.",
+    "skills": [
+      "Semantic search",
+      "Context retrieval",
+      "Decision lookup"
+    ],
+    "examples": [
+      "Find past decisions about a specific project or topic",
+      "Surface similar projects from the past to avoid duplicating work",
+      "Answer 'what did we decide about X?' from historical task data"
+    ],
+    "starter_tasks": [
+      "What did we decide about the Q3 product launch?",
+      "Find similar projects we've done in the past",
+      "What's the context behind this current initiative?"
+    ],
+    "conversation_hook": "How much time does your team spend hunting for context that already exists somewhere in your workspace? Dash finds it instantly — past decisions, prior projects, relevant threads.",
+    "value": "Eliminates 'where do I find X?' friction; faster onboarding for new team members; institutional knowledge preserved and searchable",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Decision Tracker (Teammates) to build a structured decision log that Dash can search; pair with Onboarding Coordinator to give new hires a Dash starting point"
+  },
+  {
+    "name": "Dependency Impact Analysis",
+    "surface": "Dash",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Operations",
+      "Strategic Ops"
+    ],
+    "jtbd": "Understand the downstream impact of a delay before it cascades",
+    "difficulty": "Light config",
+    "prerequisites": "Tasks with dependencies set up; Dash enabled; projects structured with milestones",
+    "how_to": "Ask Dash what's affected if a specific task slips; best results with well-structured dependency graph",
+    "implementation_notes": "1. Ensure task dependencies are set up in Asana (critical prerequisite). 2. Ask Dash: 'If [task name] slips by X days, what other tasks are affected?' 3. For complex programs: set up a milestone-level dependency map first — Dash reads task-level data best when it's structured. AIDM TIP: This use case is 80% about the data quality setup, 20% about the Dash query. Customers need dependency hygiene first. Help them set up the dependency graph as a pre-work step. Est. 30 min to set up dependencies properly.",
+    "skills": [
+      "Dependency mapping",
+      "Impact analysis",
+      "Timeline modeling"
+    ],
+    "examples": [
+      "Show what other tasks are blocked if a milestone slips",
+      "Identify the critical path when a task is delayed",
+      "Model the downstream impact of a scope change"
+    ],
+    "starter_tasks": [
+      "If this task slips by a week, what else is affected?",
+      "What's the critical path for this project?",
+      "Which tasks have the most downstream dependencies?"
+    ],
+    "conversation_hook": "How often does a single slip turn into a cascade that nobody saw coming? Ask Dash what's affected before you agree to any timeline change — proactive replanning instead of reactive fire drills.",
+    "value": "Proactive replanning instead of reactive fire drills; stakeholders informed before impact is felt",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with RAID Tracker to log dependency risks; combine with Launch Planner to validate dependency assumptions at planning time"
+  },
+  {
+    "name": "Smart Status",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Keep stakeholders informed without manually writing every status update",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Project with tasks and due dates; Smart Features enabled (included in AWM)",
+    "how_to": "Click 'Update status' on any project — AI drafts a status update from recent task activity; review, edit, and publish",
+    "implementation_notes": "No build required. Available on any project with AWM. Usage: open project → click status field → 'Draft with AI' → review and publish. AIDM TIP: Ensure projects have at minimum: tasks with due dates, task assignees, and at least one completed task in the last week — richer data produces better drafts. Teach customers to make minor edits rather than full rewrites to build trust in the feature. Est. 0 min.",
+    "skills": [
+      "Status drafting",
+      "Progress summarization",
+      "AI writing"
+    ],
+    "examples": [
+      "Draft a project status update from recent task activity in one click",
+      "Generate a RAG status recommendation based on task completion rates",
+      "Summarize blocked tasks and risks in a status narrative"
+    ],
+    "starter_tasks": [
+      "Draft a status update for this project",
+      "What should I say in my Friday status update?",
+      "Summarize what happened on this project this week"
+    ],
+    "conversation_hook": "What if every status update on every project took 30 seconds instead of 10 minutes? Smart Status drafts it from your actual task data — you just review and publish.",
+    "value": "5–10 min per status update eliminated; consistent format across all projects; less PM admin overhead",
+    "credit_intensity": "Low",
+    "used_by": [
+      "REWE"
+    ],
+    "smart_workflow_pairing": "Combine with Weekly Status Digest (Teammates) for automated delivery; pair with Smart Charts for data-driven status visuals"
+  },
+  {
+    "name": "Smart Summaries",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Get up to speed on any task, project, or portfolio without scheduling a catch-up meeting",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Task or project with activity history; Smart Features enabled",
+    "how_to": "Click 'Summarize' on any task, project, or portfolio to get a narrative summary of recent activity and current state",
+    "implementation_notes": "No build required. Available at task, project, and portfolio level. AIDM TIP: This is often the highest-value demo for time-poor executives and CSMs — show them summarizing a complex project task they haven't looked at in 2 weeks. The 'wow' moment lands immediately. Zero setup cost. Est. 0 min.",
+    "skills": [
+      "Activity summarization",
+      "Context compression",
+      "Progress narration"
+    ],
+    "examples": [
+      "Summarize a month of task comments into a 3-sentence catch-up",
+      "Provide a portfolio-level digest of all active projects",
+      "Explain the current state of a project to a new stakeholder"
+    ],
+    "starter_tasks": [
+      "Summarize this project for me",
+      "Catch me up on this task — what happened while I was out?",
+      "Give me a portfolio digest for this week"
+    ],
+    "conversation_hook": "How many times a week does someone ask 'can you catch me up?' This feature answers that in seconds from the actual task history — no meeting required.",
+    "value": "Eliminate 'catch me up' meetings; faster context-switching; async alignment across time zones",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Smart Status to combine summary and status into a single update; combine with Pre-Meeting Brief (Teammates) for automated pre-read generation"
+  },
+  {
+    "name": "Smart Fields",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Set up new projects faster with AI-suggested custom fields that match project type",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Smart Features enabled",
+    "how_to": "When creating or editing a project, AI suggests relevant custom fields based on project type; accept with one click",
+    "implementation_notes": "No build required. Appears automatically when creating new projects. AIDM TIP: Help customers see this as a 'governance accelerator' — Smart Fields improves field consistency across teams, which makes portfolio reporting much more reliable. Consistent fields = better Smart Charts data downstream. Est. 0 min.",
+    "skills": [
+      "Field suggestion",
+      "Project setup",
+      "Data governance"
+    ],
+    "examples": [
+      "Suggest relevant custom fields when creating a new project",
+      "Recommend fields like Priority, Status, and Deadline based on project type",
+      "Improve field consistency across similar projects automatically"
+    ],
+    "starter_tasks": [
+      "What custom fields should I add to this project?",
+      "Suggest fields for a new marketing campaign project",
+      "How should I structure this new operations project?"
+    ],
+    "conversation_hook": "How many of your projects are missing the same fields, making portfolio reporting inconsistent? Smart Fields suggests the right structure the moment a project is created.",
+    "value": "Faster project setup; more consistent field usage across teams; better data quality for portfolio reporting",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Smart Projects for complete project scaffolding; feeds better data into Smart Charts and Executive Briefing Generator"
+  },
+  {
+    "name": "Smart Rules",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Automate repetitive workflow steps without needing to learn the rule builder",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Project with a workflow to automate; Smart Features enabled",
+    "how_to": "Describe what you want to automate in plain language; AI creates the rule automatically for review and activation",
+    "implementation_notes": "No build required. Available in the Rules section of any project. Customer says what they want ('When a task is marked complete, assign the next task to [person]'), AI builds the rule. AIDM TIP: This is a great wedge into AI Studio conversations — customers who love Smart Rules are ready for more complex Studio automation. Show them the progression: Smart Rules → AI Teammates → AI Studio. Est. 0 min.",
+    "skills": [
+      "Automation creation",
+      "Workflow logic",
+      "Rule building"
+    ],
+    "examples": [
+      "Create an automation rule from a plain-language description",
+      "Set up multi-step rules without writing any logic",
+      "Automate status changes, assignments, and notifications with one sentence"
+    ],
+    "starter_tasks": [
+      "Create a rule that assigns tasks to me when they're due tomorrow",
+      "Automate sending a Slack notification when a milestone is complete",
+      "Set up a rule to close tasks when all subtasks are done"
+    ],
+    "conversation_hook": "How many repetitive steps in your workflow does your team do manually because building a rule felt too complex? With Smart Rules, you describe what you want in plain language — AI builds it.",
+    "value": "Teams that avoided automation due to complexity now automate; hours of manual work saved weekly across teams",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Smart Rules are the trigger layer for many AI Teammate and Studio workflows — they're the bridge between human action and AI execution"
+  },
+  {
+    "name": "Smart Projects",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Start a new project in minutes with AI-generated structure, not a blank page",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Smart Features enabled",
+    "how_to": "Describe your project goal in plain language when creating a project — AI builds the structure with tasks, sections, and milestones",
+    "implementation_notes": "No build required. Available when creating a new project. AIDM TIP: Combine with Smart Fields immediately after — Smart Projects creates the structure, Smart Fields adds the right data fields, Smart Rules adds the automations. This three-step combo is a high-value demo sequence for new customers. Est. 0 min.",
+    "skills": [
+      "Project scaffolding",
+      "Task generation",
+      "Structure creation"
+    ],
+    "examples": [
+      "Generate a full project structure from a one-sentence description",
+      "Create tasks, sections, and milestones automatically for a new initiative",
+      "Scaffold a campaign, product launch, or ops project in seconds"
+    ],
+    "starter_tasks": [
+      "Create a project for our Q3 product launch",
+      "Build a project structure for our annual planning process",
+      "Set up an onboarding project for a new team member"
+    ],
+    "conversation_hook": "How much time does your team spend setting up new projects from scratch? Describe what you're working on in one sentence — AI builds the structure, you start the work.",
+    "value": "Project setup cut from hours to minutes; consistent structure across teams; no more blank-page paralysis",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Smart Fields and Smart Rules for complete project scaffolding in under 5 minutes; pair with Onboarding Coordinator for automated new hire project creation"
+  },
+  {
+    "name": "Smart Goals",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Strategic Ops",
+      "Cross-Functional"
+    ],
+    "jtbd": "Write clearer, more measurable goals without starting from a blank page",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Goals feature and Smart Features enabled",
+    "how_to": "Describe what you want to achieve; AI drafts a structured goal with measurable metrics; edit and finalize",
+    "implementation_notes": "No build required. Available in Goals. AIDM TIP: Frame this for executives as a goal quality improvement tool, not just a time saver — goals with clear metrics have better achievement rates. Show how Smart Goals connects to project-level work in Asana (goal → project → tasks). Est. 0 min.",
+    "skills": [
+      "Goal structuring",
+      "Metric definition",
+      "OKR drafting"
+    ],
+    "examples": [
+      "Draft a measurable goal from a high-level objective description",
+      "Suggest metrics and success criteria for a business goal",
+      "Create OKR-style goals with quantifiable key results"
+    ],
+    "starter_tasks": [
+      "Help me write a measurable goal for our Q3 revenue target",
+      "Draft OKRs for our customer success team",
+      "What metrics should we use to measure this goal?"
+    ],
+    "conversation_hook": "How consistent are your goals across teams — do they all have clear, measurable outcomes? Smart Goals drafts structured goals from a description, so the whole org starts from the same quality baseline.",
+    "value": "Better goal quality and consistency; faster goal-setting cycles; more structured OKRs across the organization",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Business Case Builder to set success metrics for approved initiatives; combine with Smart Projects to link goals to project execution"
+  },
+  {
+    "name": "Smart Charts",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Discover insights in project data without building dashboards manually",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Projects with tasks and structured data; Smart Features enabled",
+    "how_to": "Ask AI to surface insights from a project or portfolio — AI generates relevant charts based on your actual data",
+    "implementation_notes": "No build required. Best results when: (1) projects have custom fields with consistent values, (2) tasks have due dates, (3) Smart Fields was used for consistent field naming. AIDM TIP: Smart Charts is most powerful after Smart Fields standardizes the data structure — show this as a sequence, not a standalone feature. Est. 0 min.",
+    "skills": [
+      "Data visualization",
+      "Insight generation",
+      "Trend detection"
+    ],
+    "examples": [
+      "Generate charts showing task completion rates and velocity trends",
+      "Visualize workload distribution across team members",
+      "Surface patterns in project data without manual dashboard building"
+    ],
+    "starter_tasks": [
+      "Show me insights from this project's task data",
+      "Visualize our team's workload distribution",
+      "What trends do you see in our project completion rates?"
+    ],
+    "conversation_hook": "How long does it take to build a dashboard for your portfolio review? Smart Charts generates relevant visualizations from your live project data — no BI tool required.",
+    "value": "PMs and execs see trends without building dashboards; data-driven decisions made faster",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Combine with Smart Fields for consistent data to visualize; pair with Executive Briefing Generator (Dash) to include charts in leadership updates"
+  },
+  {
+    "name": "Smart Editor",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Improve the clarity and tone of written communication directly in Asana",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Smart Features enabled",
+    "how_to": "Write a task description, status update, or message — use Smart Editor to refine tone, clarity, and formatting with one click",
+    "implementation_notes": "No build required. Available anywhere text is written in Asana. AIDM TIP: Position this for task descriptions specifically — vague task descriptions are one of the top causes of rework. A well-written task description saves engineering clarification time. 'If you use Smart Editor for nothing else, use it for task descriptions.' Est. 0 min.",
+    "skills": [
+      "Writing improvement",
+      "Tone adjustment",
+      "Clarity editing"
+    ],
+    "examples": [
+      "Improve a vague task description into clear, actionable instructions",
+      "Adjust a status update to the right tone for executive communication",
+      "Format a long comment into readable bullets and structure"
+    ],
+    "starter_tasks": [
+      "Make this task description clearer and more actionable",
+      "Adjust the tone of this status update for a leadership audience",
+      "Reformat this comment so it's easier to read"
+    ],
+    "conversation_hook": "How many tasks get re-explained in the comments because the description wasn't clear enough? Smart Editor rewrites task descriptions to be unambiguous — one click before you save.",
+    "value": "Clearer task descriptions; fewer misunderstood instructions; reduced back-and-forth from ambiguous communication",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Pair with Campaign Brief Writer and Spec Reviewer for writing quality across the full project lifecycle"
+  },
+  {
+    "name": "Smart Chat",
+    "surface": "Smart Features",
+    "cross_feature": false,
+    "cross_feature_label": "",
+    "functions": [
+      "Cross-Functional"
+    ],
+    "jtbd": "Surface insights and take action on work through a conversational interface",
+    "difficulty": "Out-of-the-box",
+    "prerequisites": "Smart Chat access (rolling out through August 2025); Smart Features enabled",
+    "how_to": "Use the chat interface to ask questions about your work, get summaries, create tasks, or surface blockers — no setup needed",
+    "implementation_notes": "No build required. Rolling out through August 2025 — check with your SE for current availability. AIDM TIP: Position Smart Chat as the 'natural language interface to Asana' — especially valuable for users who find navigating Asana complex. It lowers the floor for non-power users while raising the ceiling for power users. Est. 0 min.",
+    "skills": [
+      "Conversational AI",
+      "Work surfacing",
+      "Task creation"
+    ],
+    "examples": [
+      "Ask questions about your work and get answers from actual project data",
+      "Create tasks by describing them in natural language",
+      "Surface what needs your attention today across all your projects"
+    ],
+    "starter_tasks": [
+      "What do I need to work on today?",
+      "Create a task for [description]",
+      "What's at risk across my projects?"
+    ],
+    "conversation_hook": "What if your team could ask Asana questions the same way they'd ask a colleague? Smart Chat gives everyone natural language access to their work — no navigation required.",
+    "value": "Natural language access to work data; reduces friction for non-power users; faster answers than manual search or meetings",
+    "credit_intensity": "Low",
+    "used_by": [],
+    "smart_workflow_pairing": "Smart Chat is the conversational layer that connects all other AI surfaces — it's the universal interface to the entire AI stack"
+  },
+  {
+    "name": "Ad Operations Engine",
+    "surface": "Cross-Feature",
+    "cross_feature": true,
+    "cross_feature_label": "AI Studio + AI Teammates",
+    "functions": [
+      "Marketing"
+    ],
+    "jtbd": "Automate end-to-end ad request assignment and SOW generation with zero human intervention for routine requests",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "AI Studio Max; vendor/market assignment rules in a reference sheet; Slack or form intake configured; AI Teammates enabled",
+    "how_to": "AI Studio runs a multi-step decision tree to assign incoming ad requests to vendors; AI Teammate generates the SOW document and posts confirmation — all without manual intervention",
+    "implementation_notes": "ARCHITECTURE: Intake (Slack/form) → AI Studio (classify + assign) → AI Teammate (generate SOW) → Output (task created, notification sent).\n\nPHASE 1 — AI Studio (3-4 days): (1) Build intake: Slack webhook or Asana form. (2) Studio steps: parse request → extract market/format/deadline → run assignment logic against vendor rules (connect Google Sheets or embed rules in prompt) → validate assignment. (3) Output: create task with vendor assignment. \n\nPHASE 2 — AI Teammate (1 day): (4) Teammate trigger: new task created by Studio. (5) Teammate prompt: using request details, generate an SOW document with scope, deliverables, timeline, and vendor contact. Post as task attachment. \n\nPHASE 3 — Exception handling: if Studio confidence < 80%, route to human triage queue with full context. \n\nINTEGRATION: Google Sheets for vendor rules (update without rebuilding the agent). Tier: AI Studio Max. Est. total build: 5-7 days.",
+    "skills": [
+      "Request classification",
+      "Vendor assignment",
+      "SOW generation",
+      "Exception routing"
+    ],
+    "examples": [
+      "Assign 300+ monthly ad requests to vendors across 10 markets in under 1 minute",
+      "Generate SOW documents automatically from request details",
+      "Route only the 2% of requests that require human judgment to a triage queue"
+    ],
+    "starter_tasks": [
+      "Assign this ad request to the right vendor",
+      "Generate an SOW for this campaign request",
+      "Show me all requests that were escalated for human review this month"
+    ],
+    "conversation_hook": "Spotify replaced a 1-hour SLA, 3-FTE manual process with this workflow — 288 monthly requests processed in under 5 minutes, 97% automated. What does your ad ops process look like today?",
+    "value": "288 hours/month → ~5 minutes; 2 FTEs freed for strategic work; 97%+ automation rate on routine requests",
+    "credit_intensity": "High",
+    "used_by": [
+      "Spotify"
+    ],
+    "smart_workflow_pairing": "Pair with Campaign Brief Intake & Normalization for upstream brief validation before request assignment; combine with Smart Rules to trigger SLA alerts on unassigned requests"
+  },
+  {
+    "name": "Omnichannel Campaign Intake Engine",
+    "surface": "Cross-Feature",
+    "cross_feature": true,
+    "cross_feature_label": "AI Studio + AI Teammates",
+    "functions": [
+      "Marketing"
+    ],
+    "jtbd": "Power a single campaign intake-to-launch engine across channels with no manual handoffs",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "AI Studio Max; campaign management projects in Asana; multi-channel workflow defined; AI Teammates enabled",
+    "how_to": "Nine Studio rules extract brief data, validate inputs, flag conflicts, standardize naming, and generate approvals — AI Teammates coordinate handoffs and track production through to launch",
+    "implementation_notes": "ARCHITECTURE: Form intake → AI Studio (9-step pipeline) → AI Teammates (coordination + tracking) → Launch.\n\nPHASE 1 — AI Studio pipeline (5-7 days): Step 1: extract data from campaign brief. Step 2: validate inputs (required fields, format checks). Step 3: flag conflicts (budget, timeline, audience overlap). Step 4: standardize naming convention. Step 5: generate approval request task. Steps 6-9: route to channels (paid, organic, email, events) based on campaign type. Each step creates/updates tasks in Asana.\n\nPHASE 2 — AI Teammates (2 days): Teammate 1 (Production Coordinator): monitors task status, nudges owners at risk of missing deadlines. Teammate 2 (Approval Tracker): tracks approval tasks, escalates if approval stalls 48h+. \n\nINTEGRATION: Requires clear campaign taxonomy and naming convention — define this before building. Tier: AI Studio Max. Est. total build: 7-10 days.",
+    "skills": [
+      "Brief extraction",
+      "Input validation",
+      "Conflict detection",
+      "Approval orchestration",
+      "Production tracking"
+    ],
+    "examples": [
+      "Extract and validate campaign data from briefs automatically across 9 workflow steps",
+      "Standardize naming and routing for multi-channel campaign assets",
+      "Coordinate production handoffs with AI Teammates tracking every milestone"
+    ],
+    "starter_tasks": [
+      "Validate this campaign brief and route it to the right channels",
+      "What's the status of all campaigns currently in production?",
+      "Flag any campaigns at risk of missing their launch date"
+    ],
+    "conversation_hook": "RBC runs every omnichannel campaign through this engine — from brief intake to launch, no manual handoffs. What does your campaign ops process cost in human hours today?",
+    "value": "End-to-end campaign automation; no manual handoffs; consistent validation and naming; production bottlenecks surfaced in real time",
+    "credit_intensity": "High",
+    "used_by": [
+      "RBC"
+    ],
+    "smart_workflow_pairing": "Pair with Brand Auditor to add automated brand compliance check before asset approval; combine with Smart Charts to track campaign velocity and bottleneck patterns over time"
+  },
+  {
+    "name": "Client Onboarding + Knowledge Hub",
+    "surface": "Cross-Feature",
+    "cross_feature": true,
+    "cross_feature_label": "AI Studio + AI Teammates",
+    "functions": [
+      "Customer Success",
+      "Operations"
+    ],
+    "jtbd": "Automate client onboarding logic and maintain a living knowledge hub that refreshes itself over time",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "AI Studio Pro+; client data in CRM or Asana; onboarding workflow defined; AI Teammates enabled",
+    "how_to": "AI Studio evaluates sold services and triggers the right onboarding tasks; an AI Teammate builds and maintains a living client profile by parsing context and refreshing it over time",
+    "implementation_notes": "ARCHITECTURE: CRM/deal close → AI Studio (evaluate + trigger onboarding) → AI Teammates (build + maintain client knowledge hub).\n\nPHASE 1 — AI Studio (3 days): (1) Trigger: deal closed in CRM (Salesforce webhook or Asana form). (2) Studio steps: evaluate sold services → identify required onboarding tasks from service matrix → create personalized onboarding project from template → carry client context into all subtasks. (3) Duplicate detection: check if client already exists.\n\nPHASE 2 — AI Teammate Knowledge Hub (2-3 days): (4) Teammate 'Vision': on weekly schedule, parse Salesforce + Asana context for this client. Update client profile task: key contacts, active projects, health signals, recent decisions. Log every update with timestamp in an audit trail subtask. (5) Alert Teammate: if client health signals drop, notify the CSM.\n\nINTEGRATION: Requires Salesforce connection (native or Zapier). Tier: AI Studio Pro+. Est. total build: 5-7 days.",
+    "skills": [
+      "Onboarding automation",
+      "Client profiling",
+      "Context synthesis",
+      "Health monitoring"
+    ],
+    "examples": [
+      "Trigger personalized onboarding tasks when a deal closes, based on services sold",
+      "Build a living client knowledge hub that refreshes automatically from CRM and Asana data",
+      "Maintain an audit trail of every client profile update"
+    ],
+    "starter_tasks": [
+      "Set up onboarding for [client name] who purchased [services]",
+      "What's the current status of [client]'s onboarding?",
+      "Show me [client]'s profile and any recent changes"
+    ],
+    "conversation_hook": "Amsive uses this to ensure every new client gets a complete, personalized onboarding — and their CSMs walk into every call knowing exactly what's changed since the last one. What does client knowledge management look like for your team today?",
+    "value": "Consistent, personalized onboarding; CSMs always have current client context; health signals surface before renewals become risks",
+    "credit_intensity": "Low",
+    "used_by": [
+      "Amsive"
+    ],
+    "smart_workflow_pairing": "Pair with Renewal Prep Assistant to use the knowledge hub in renewal briefings; combine with Smart Goals to set client success milestones during onboarding"
+  },
+  {
+    "name": "IT Service Desk Intelligence Loop",
+    "surface": "Cross-Feature",
+    "cross_feature": true,
+    "cross_feature_label": "AI Studio + AI Teammates + Smart Rules",
+    "functions": [
+      "IT"
+    ],
+    "jtbd": "Build a self-improving IT service desk that deflects Tier 1, routes Tier 2, and learns from every resolved ticket",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "AI Studio Pro+; IT knowledge base; Smart Rules enabled; AI Teammates enabled; incident history in Asana",
+    "how_to": "AI Studio classifies and deflects tickets; Smart Rules trigger escalation paths; AI Teammate conducts post-resolution learning and updates the KB — the system gets smarter with every ticket",
+    "implementation_notes": "ARCHITECTURE: Ticket intake → AI Studio (classify + deflect/route) → Smart Rules (SLA triggers) → Human resolution → AI Teammate (post-resolution learning) → KB update.\n\nPHASE 1 — AI Studio Tier 1 Deflection (3 days): (1) Intake: Asana form or Slack. (2) Studio: classify ticket type → search KB → if match: draft response and resolve. If no match: classify severity and route. (3) Create task with full context for Tier 2.\n\nPHASE 2 — Smart Rules Escalation (1 day): (4) Smart Rule: if task in 'Tier 2 Queue' has no activity for 4h → escalate to senior engineer. Smart Rule: if P1 ticket → immediate Slack notification.\n\nPHASE 3 — AI Teammate Learning Loop (2 days): (5) Teammate trigger: task moved to 'Resolved'. (6) Teammate: extract resolution steps → check if KB covers this scenario → if not: draft a new KB article → post for IT admin review. (7) Approved articles automatically added to Studio KB.\n\nINTEGRATION: Slack for intake/notifications. Tier: AI Studio Pro+. Est. total build: 6-8 days.",
+    "skills": [
+      "Ticket deflection",
+      "Severity classification",
+      "SLA monitoring",
+      "KB self-improvement",
+      "Resolution learning"
+    ],
+    "examples": [
+      "Deflect Tier 1 tickets with KB answers, route Tier 2 with full context",
+      "Trigger SLA escalations automatically via Smart Rules",
+      "Extract resolution patterns from closed tickets and draft new KB articles"
+    ],
+    "starter_tasks": [
+      "What IT tickets came in today and how were they classified?",
+      "Show me all tickets that missed SLA this week",
+      "What new KB articles should we create based on recent ticket patterns?"
+    ],
+    "conversation_hook": "Most help desks get stuck in the same ticket loops forever. This architecture deflects the repeatables, routes the complex ones correctly, and — here's the differentiator — learns from every resolved ticket to deflect more next week.",
+    "value": "Tier 1 deflection rate compounds over time; SLA compliance improves; KB becomes a living asset; IT team spends time on real problems",
+    "credit_intensity": "Medium",
+    "used_by": [
+      "Array Behavioral Care",
+      "Fujitsu"
+    ],
+    "smart_workflow_pairing": "This use case IS a Smart Workflow — Studio handles intake, Smart Rules handle SLA, Teammates handle learning. It demonstrates the full AI stack in one implementation"
+  },
+  {
+    "name": "Fleet & Asset Invoice Auditor",
+    "surface": "Cross-Feature",
+    "cross_feature": true,
+    "cross_feature_label": "AI Studio + AI Teammates",
+    "functions": [
+      "Finance",
+      "Operations"
+    ],
+    "jtbd": "Audit vendor invoices against negotiated rates automatically — catching discrepancies before they're paid",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "AI Studio Pro+; vendor contract/rate card data accessible; invoice intake process defined; AI Teammates enabled",
+    "how_to": "AI Studio validates invoices against negotiated rate structures; AI Teammate flags discrepancies and creates exception tasks for finance review",
+    "implementation_notes": "ARCHITECTURE: Invoice submitted → AI Studio (validate + compare) → AI Teammate (flag + report) → Finance review.\n\nPHASE 1 — AI Studio Validation (2-3 days): (1) Invoice intake: Asana form with line items. (2) Studio steps: for each line item, compare rate charged vs. negotiated rate in rate card (connect to Google Sheets or embed in context). Flag if: rate exceeds contract by >2%, service not in contract, duplicate line item. (3) Output: 'Clean' or 'Exception' classification per invoice.\n\nPHASE 2 — AI Teammate Reporting (1 day): (4) Teammate trigger: daily summary of invoices processed. (5) Teammate: for each Exception invoice, create a task with specific discrepancy detail (line item, charged rate, contracted rate, $ variance). Post weekly exception summary to Finance team. \n\nINTEGRATION: Rate card in Google Sheets or Asana custom field. Tier: AI Studio Pro. Est. total build: 4-5 days.",
+    "skills": [
+      "Invoice validation",
+      "Rate card comparison",
+      "Discrepancy detection",
+      "Exception reporting"
+    ],
+    "examples": [
+      "Compare invoice line items against negotiated vendor rates automatically",
+      "Flag invoices where billed rates exceed contracted rates",
+      "Generate a weekly exception report for finance review"
+    ],
+    "starter_tasks": [
+      "Validate this invoice against our vendor contract",
+      "How much did we overbill vs. negotiate with vendors this month?",
+      "Show me all invoice exceptions flagged this week"
+    ],
+    "conversation_hook": "REWE uses this to audit invoices for their 800-truck fleet — catching discrepancies against negotiated garage rates before payment. What does your current invoice review process catch, and what slips through?",
+    "value": "Invoice discrepancies caught before payment; finance team reviews exceptions, not every invoice; vendor overcharges recovered",
+    "credit_intensity": "Low",
+    "used_by": [
+      "REWE"
+    ],
+    "smart_workflow_pairing": "Pair with Invoice & Exception Triage (AI Studio) for upstream invoice intake; combine with Budget Variance Commentary to include recovered amounts in monthly variance narrative"
+  },
+  {
+    "name": "End-to-End Creative Ops Engine",
+    "surface": "Cross-Feature",
+    "cross_feature": true,
+    "cross_feature_label": "AI Studio + AI Teammates + Smart Rules",
+    "functions": [
+      "Marketing"
+    ],
+    "jtbd": "Run a fully automated creative operations workflow from intake to delivery — reclaiming 1,400+ hours annually",
+    "difficulty": "Requires Studio build",
+    "prerequisites": "AI Studio Max; creative team projects structured in Asana; Smart Rules enabled; AI Teammates enabled; intake process defined",
+    "how_to": "AI Studio handles intake orchestration and routing; AI Teammates coordinate production and track approvals; Smart Rules trigger SLAs and escalations — humans focus on creative judgment, not coordination",
+    "implementation_notes": "ARCHITECTURE: Intake → AI Studio (validate + orchestrate) → Smart Rules (SLA + escalation triggers) → AI Teammates (production coordination + approval tracking) → Delivery.\n\nPHASE 1 — AI Studio Orchestration (5 days): (1) Intake form: creative type, goal, audience, channels, deadline. (2) Studio pipeline: validate completeness → classify request type (15+ deliverable types) → assign to correct team/queue → generate subtask structure from template → apply region-specific branching logic (e.g., EMEA vs. AMER workflows). \n\nPHASE 2 — Smart Rules Infrastructure (1 day): (3) SLA rules: if task not started within 24h of assignment → notify manager. If approval task open 48h → escalate. (4) Milestone rules: when each stage complete → trigger next stage.\n\nPHASE 3 — AI Teammates (3 days): (5) Production Coordinator Teammate: daily scan of active creative tasks → nudge stalled items → flag at-risk deliverables to Creative Director. (6) Capacity Monitor Teammate: weekly — compare active requests vs. team capacity → alert if team is >120% loaded.\n\nINTEGRATION: Slack for notifications. Tier: AI Studio Max. Est. total build: 9-12 days.",
+    "skills": [
+      "Intake orchestration",
+      "Capacity monitoring",
+      "SLA management",
+      "Production coordination",
+      "Approval tracking"
+    ],
+    "examples": [
+      "Classify and route 15+ creative deliverable types to the right team automatically",
+      "Monitor production capacity weekly and alert when team is overloaded",
+      "Track every approval task and escalate automatically when stalled"
+    ],
+    "starter_tasks": [
+      "What creative requests are currently in flight and what's at risk?",
+      "Show me team capacity for the next 2 weeks",
+      "Which deliverables are stalled in approval?"
+    ],
+    "conversation_hook": "Indeed uses a version of this to run their global creative operations — 1,400+ hours reclaimed annually, $300K+ in capacity unlocked. What does your creative ops coordination overhead look like today?",
+    "value": "1,400+ hours/year reclaimed from coordination; creative team focuses on quality, not logistics; consistent SLAs across every request type",
+    "credit_intensity": "High",
+    "used_by": [
+      "Indeed",
+      "Spotify"
+    ],
+    "smart_workflow_pairing": "This use case is the template for what a fully mature Smart Workflow looks like — Smart Rules as the trigger layer, Studio as the processing layer, Teammates as the execution layer"
+  }
+];
+
+const DIFF_CLASS = {
+  "Out-of-the-box":        "badge-diff-ootb",
+  "Light config":           "badge-diff-light",
+  "Requires Studio build":  "badge-diff-studio"
+};
+const DIFF_LABEL = {
+  "Out-of-the-box":        "Out-of-the-box",
+  "Light config":           "Light config",
+  "Requires Studio build":  "Studio build"
+};
+
+function surfaceBadgeClass(surface) {
+  return 'badge badge-surface-' + surface.replace(/ /g, '.');
+}
+function accentClass(surface) {
+  return 'card-accent accent-' + surface.replace(/ /g, '.');
+}
+
+function renderCards() {
+  const grid = document.getElementById('cardGrid');
+  const noResults = document.getElementById('noResults');
+  grid.innerHTML = '';
+  grid.appendChild(noResults);
+
+  USE_CASES.forEach((uc, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.surface = uc.surface;
+    card.dataset.difficulty = uc.difficulty;
+    card.dataset.credits = uc.credit_intensity;
+    card.dataset.functions = JSON.stringify(uc.functions);
+    card.dataset.cross = uc.cross_feature ? '1' : '0';
+    card.dataset.idx = idx;
+
+    const fnBadges = uc.functions.slice(0,3)
+      .map(f => `<span class="badge badge-fn">${f}</span>`).join('');
+    const usedBy = uc.used_by.length
+      ? uc.used_by.map(c => `<span class="badge badge-used">${c}</span>`).join('') : '';
+    const cfBadge = uc.cross_feature
+      ? `<span class="badge badge-cf">${uc.cross_feature_label}</span>` : '';
+
+    const examplesHtml = uc.examples.map(e => `<li>${e}</li>`).join('');
+    const starterHtml = uc.starter_tasks
+      .map(t => `<div class="starter-task">${t}</div>`).join('');
+    const skillsHtml = `<div class="pill-list">${
+      uc.skills.map(s => `<span class="pill">${s}</span>`).join('')
+    }</div>`;
+
+    const implSafe = uc.implementation_notes
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    card.innerHTML = `
+      <div class="${accentClass(uc.surface)}"></div>
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="${surfaceBadgeClass(uc.surface)}">${uc.surface}</span>
+          ${cfBadge}
+          <span class="badge ${DIFF_CLASS[uc.difficulty]}">${DIFF_LABEL[uc.difficulty]}</span>
+          <span class="badge badge-credit-${uc.credit_intensity}">Credits: ${uc.credit_intensity}</span>
+        </div>
+        <div class="card-badges">${fnBadges}</div>
+        <div class="card-title">${uc.name}</div>
+        <div class="card-jtbd">${uc.jtbd}</div>
+      </div>
+      <div class="card-tabs">
+        <div class="card-tab active" data-tab="csm">CSM View</div>
+        <div class="card-tab" data-tab="im">IM Guide</div>
+      </div>
+      <div class="card-body">
+        <div class="tab-pane active" data-pane="csm">
+          <div class="section-label">Conversation Hook</div>
+          <div class="hook-box">${uc.conversation_hook}</div>
+          <div class="section-label">What It Can Do</div>
+          <ul class="examples-list">${examplesHtml}</ul>
+          <div class="section-label">Skills</div>
+          ${skillsHtml}
+          <div class="section-label">Starter Tasks</div>
+          ${starterHtml}
+          <div class="section-label">Value Delivered</div>
+          <div class="value-box">${uc.value}</div>
+          ${usedBy ? `<div class="section-label">Used By</div><div class="pill-list">${usedBy}</div>` : ''}
+        </div>
+        <div class="tab-pane" data-pane="im">
+          <div class="section-label">Prerequisites</div>
+          <p class="prereq-text">${uc.prerequisites}</p>
+          <div class="section-label">Implementation Notes</div>
+          <div class="im-box">${implSafe}</div>
+          <div class="section-label">Smart Workflow Pairing</div>
+          <div class="workflow-box">${uc.smart_workflow_pairing}</div>
+        </div>
+      </div>
+    `;
+
+    card.querySelectorAll('.card-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        card.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
+        card.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        card.querySelector(`[data-pane="${tab.dataset.tab}"]`).classList.add('active');
+      });
+    });
+
+    grid.appendChild(card);
+  });
+
+  applyFilters();
+}
+
+let activeFilters = { surface: 'All', function: 'All', difficulty: 'All', credits: 'All' };
+let searchQuery = '';
+
+function applyFilters() {
+  const cards = document.querySelectorAll('.card[data-idx]');
+  let visible = 0;
+  cards.forEach(card => {
+    const idx = card.dataset.idx;
+    const uc = USE_CASES[idx];
+    const functions = JSON.parse(card.dataset.functions);
+    const searchable = [
+      uc.name, uc.jtbd, uc.conversation_hook, uc.surface,
+      ...uc.functions, ...uc.skills
+    ].join(' ').toLowerCase();
+
+    let show = true;
+    if (activeFilters.surface !== 'All' && card.dataset.surface !== activeFilters.surface) show = false;
+    if (activeFilters.function !== 'All' && !functions.includes(activeFilters.function)) show = false;
+    if (activeFilters.difficulty !== 'All' && card.dataset.difficulty !== activeFilters.difficulty) show = false;
+    if (activeFilters.credits !== 'All' && card.dataset.credits !== activeFilters.credits) show = false;
+    if (searchQuery && !searchable.includes(searchQuery.toLowerCase())) show = false;
+
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+
+  const label = visible === 1 ? '1 use case' : `${visible} use cases`;
+  document.getElementById('resultCount').textContent = label;
+  document.getElementById('noResults').classList.toggle('hidden', visible > 0);
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const group = btn.dataset.group;
+    document.querySelectorAll(`.filter-btn[data-group="${group}"]`)
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilters[group] = btn.dataset.val;
+    applyFilters();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  applyFilters();
+});
+
+renderCards();
+</script>
+</body>
+</html>
